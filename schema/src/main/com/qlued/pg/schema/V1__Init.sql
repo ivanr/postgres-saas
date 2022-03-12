@@ -41,4 +41,46 @@ CREATE TABLE users (
     PRIMARY KEY (user_id)
 );
 
-INSERT INTO users ( name ) VALUES ('Anonymous');
+
+-- Functions and triggers that are used to send change notifications.
+
+CREATE FUNCTION tg_notify_user_change ()
+    RETURNS trigger
+    LANGUAGE plpgsql
+AS $$
+DECLARE
+    action TEXT := TG_ARGV[0];
+BEGIN
+    PERFORM (
+        WITH payload (table_name, action, user_id) AS
+        (
+            SELECT 'users', action, OLD.user_id
+        )
+        SELECT pg_notify('entity_change_notifications', row_to_json(payload)::TEXT)
+            FROM payload
+    );
+
+    RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER notify_user_update
+    AFTER UPDATE
+    ON users
+    FOR EACH ROW
+    EXECUTE PROCEDURE tg_notify_user_change('update');
+
+CREATE TRIGGER notify_user_delete
+    AFTER DELETE
+    ON users
+    FOR EACH ROW
+    EXECUTE PROCEDURE tg_notify_user_change('delete');
+
+
+-- Some simple test operations to exercise the above code.
+
+INSERT INTO users ( name ) VALUES ('John');
+
+UPDATE users SET name = 'Smith';
+
+DELETE FROM users;
