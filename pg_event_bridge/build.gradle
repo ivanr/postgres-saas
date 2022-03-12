@@ -1,0 +1,47 @@
+plugins {
+    id 'java-library'
+
+    // https://plugins.gradle.org/plugin/io.freefair.lombok
+    id "io.freefair.lombok" version "6.4.1"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    // https://mvnrepository.com/artifact/com.impossibl.pgjdbc-ng/pgjdbc-ng
+    implementation "com.impossibl.pgjdbc-ng:pgjdbc-ng:0.8.9"
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    implementation "org.slf4j:slf4j-api:1.7.30"
+
+    // Tests dependencies.
+
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
+}
+
+sourceSets {
+    main {
+        java.srcDirs = ["src/main/"]
+        resources.srcDirs = ["src/main/"]
+    }
+
+    test {
+        java.srcDirs = ["src/test/"]
+    }
+}
+
+compileJava {
+    options.compilerArgs += ["-parameters"]
+}
+
+test {
+    useJUnitPlatform()
+}
