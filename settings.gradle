@@ -1,0 +1,4 @@
+
+rootProject.name = 'postgres-saas'
+
+include 'schema'

@@ -1,0 +1,40 @@
+
+buildscript {
+    dependencies {
+        // https://mvnrepository.com/artifact/org.postgresql/postgresql
+        classpath 'org.postgresql:postgresql:42.3.3'
+    }
+}
+
+plugins {
+    id 'java-library'
+    id "org.flywaydb.flyway" version "8.5.2"
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        java.srcDirs = ["src/main/"]
+        resources.srcDirs = ["src/main/"]
+    }
+
+    test {
+        java.srcDirs = ["src/test/"]
+    }
+}
+
+compileJava {
+    options.compilerArgs += ["-parameters"]
+}
+
+flyway {
+    url = 'jdbc:postgresql://localhost/saas'
+    user = 'postgres'
+    locations = ['classpath:com/qlued/pg/schema']
+}
+
+// Run the build first before running Flyway tasks.
+flywayMigrate.dependsOn classes
