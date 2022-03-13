@@ -8,6 +8,15 @@ import lombok.extern.slf4j.Slf4j;
 import java.sql.DriverManager;
 import java.sql.Statement;
 
+// This bridge is currently implemented using async notifications that
+// are supported by PGJDBC-NG, https://impossibl.github.io/pgjdbc-ng/
+// It's not clear if this JDBC driver can replace the official one, so the
+// choice would be to have two separate JDBC drivers in the application,
+// or implement notifications using the official driver. In the latter
+// case, we'd have to poll the database with dummy queries because the
+// notifications are not async. This is where to get the notifications:
+// https://jdbc.postgresql.org/documentation/publicapi/org/postgresql/PGConnection.html#getNotifications--
+
 @Slf4j
 public class PostgresEventBridge implements Runnable {
 
