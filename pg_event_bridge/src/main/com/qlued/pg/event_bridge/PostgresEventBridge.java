@@ -38,8 +38,9 @@ public class PostgresEventBridge implements Runnable {
 
     @Builder
     public PostgresEventBridge(String channelName, String jdbcUrl, String username, String password) {
-        // Validate channelName is an SQL identifier.
-        if (!Pattern.compile("^[\\p{Alpha}][\\p{Alnum}_]+$").matcher(channelName).matches()) {
+        // Quoted identifiers can include any character except NUL, but we
+        // are staying close to the SQL standard for simplicity.
+        if (!Pattern.compile("^[\\p{Alpha}][\\p{Alnum}_.]+$").matcher(channelName).matches()) {
             throw new IllegalArgumentException("channelName");
         }
 
@@ -119,6 +120,13 @@ public class PostgresEventBridge implements Runnable {
             });
 
             try (Statement stmt = newConnection.createStatement()) {
+                // Postgres: "Quoted identifiers can contain any character, except the character
+                // with code zero. (To include a double quote, write two double quotes.)"
+                // https://www.postgresql.org/docs/current/sql-syntax-lexical.html
+
+                // Note that Statement#enquoteIdentifier doesn't escape, it only enquotes. But
+                // we don't need to escape because we accept only strings that use a limited
+                // character set and don't allow double quotes.
                 stmt.executeUpdate("LISTEN " + stmt.enquoteIdentifier(channelName, true));
             }
 
