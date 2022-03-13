@@ -4,7 +4,6 @@ import io.debezium.config.Configuration;
 import io.debezium.connector.postgresql.PostgresConnector;
 import io.debezium.connector.postgresql.PostgresConnectorConfig;
 import io.debezium.embedded.Connect;
-import io.debezium.embedded.EmbeddedEngine;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.RecordChangeEvent;
 import io.debezium.engine.format.ChangeEventFormat;
@@ -18,24 +17,38 @@ public class Main {
     private DebeziumEngine engine;
 
     public void startEngine() {
+        // Parameter documentation:
         // https://debezium.io/documentation/reference/1.8/connectors/postgresql.html#postgresql-connector-properties
         Configuration config = Configuration.empty()
                 .withSystemProperties(Function.identity()).edit()
-                .with(EmbeddedEngine.CONNECTOR_CLASS, PostgresConnector.class)
-                .with(EmbeddedEngine.ENGINE_NAME, "debezium-poc")
-                .with(EmbeddedEngine.OFFSET_STORAGE, MemoryOffsetBackingStore.class)
+                .with("offset.storage", MemoryOffsetBackingStore.class)
+                .with("snapshot.mode", PostgresConnectorConfig.SnapshotMode.ALWAYS)
+
                 .with("name", "debezium-poc")
+                .with("connector.class", PostgresConnector.class)
+                .with("plugin.name", "pgoutput")
+                .with("slot.name", "debezium")
+                .with("slot.drop.on.stop", "false")
+                .with("publication.name", "dbz_publication")
+
                 .with("database.hostname", "localhost")
                 .with("database.port", 5432)
                 .with("database.user", "postgres")
                 //.with("database.password", "")
-                .with("database.server.name", "server1")
                 .with("database.dbname", "saas")
-                .with("plugin.name", "pgoutput")
-                .with("publication.name", "dbz_publication")
-                // The following requires super-user permissions.
-                .with("publication.autocreate.mode", "all_tables")
-                .with(PostgresConnectorConfig.SNAPSHOT_MODE, PostgresConnectorConfig.SnapshotMode.ALWAYS)
+                .with("database.server.name", "server1")
+
+                //.with("schema.include.list", "")
+                //.with("schema.exclude.list", "")
+                //.with("database.include.list", "")
+                //.with("database.exclude.list", "")
+                //.with("table.include.list", "")
+                //.with("table.exclude.list", "")
+                //.with("column.include.list", "")
+                //.with("column.exclude.list", "")
+
+                .with("publication.autocreate.mode", "all_tables") // Requires super-user permissions.
+
                 .build();
 
         engine = DebeziumEngine.create(ChangeEventFormat.of(Connect.class))
