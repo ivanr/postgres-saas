@@ -110,7 +110,7 @@ public class PostgresEventBridge implements Runnable {
             });
 
             try (Statement stmt = newConnection.createStatement()) {
-                stmt.executeUpdate("LISTEN " + channelName);
+                stmt.executeUpdate("LISTEN " + stmt.enquoteIdentifier(channelName, true));
             }
 
             return newConnection;
