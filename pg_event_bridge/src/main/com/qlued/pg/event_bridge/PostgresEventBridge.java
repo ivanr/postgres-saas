@@ -7,7 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.regex.Pattern;
 
 // This bridge is currently implemented using async notifications that
 // are supported by PGJDBC-NG, https://impossibl.github.io/pgjdbc-ng/
@@ -37,6 +39,11 @@ public class PostgresEventBridge implements Runnable {
 
     @Builder
     public PostgresEventBridge(String channelName, String jdbcUrl, String username, String password) {
+        // Validate channelName is an SQL identifier.
+        if (!Pattern.compile("^[\\p{Alpha}][\\p{Alnum}_]+$").matcher(channelName).matches()) {
+            throw new IllegalArgumentException("channelName");
+        }
+
         this.channelName = channelName;
         this.jdbcUrl = jdbcUrl;
         this.username = username;
