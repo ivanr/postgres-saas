@@ -1,5 +1,5 @@
 
 rootProject.name = 'postgres-saas'
 
-include 'pg_event_bridge'
+include 'event_bridge'
 include 'schema'
