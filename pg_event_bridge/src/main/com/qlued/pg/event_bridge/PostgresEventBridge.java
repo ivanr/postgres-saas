@@ -5,6 +5,7 @@ import com.impossibl.postgres.api.jdbc.PGNotificationListener;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 
@@ -84,8 +85,10 @@ public class PostgresEventBridge implements Runnable {
     }
 
     private PGConnection connectToPostgres() throws Exception {
-        PGConnection newConnection = DriverManager.getConnection(jdbcUrl, username, password)
-                .unwrap(PGConnection.class);
+        Connection newJdbcConnection = DriverManager.getConnection(jdbcUrl, username, password);
+        newJdbcConnection.setAutoCommit(true);
+
+        PGConnection newConnection = newJdbcConnection.unwrap(PGConnection.class);
 
         try {
             newConnection.addNotificationListener(new PGNotificationListener() {
