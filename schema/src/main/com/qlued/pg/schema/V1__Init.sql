@@ -52,9 +52,9 @@ DECLARE
     action TEXT := TG_ARGV[0];
 BEGIN
     PERFORM (
-        WITH payload (table_name, action, user_id) AS
+        WITH payload ("table_name", "action", "timestamp", "user_id") AS
         (
-            SELECT 'users', action, OLD.user_id
+            SELECT 'users', action, now(), OLD.user_id
         )
         SELECT pg_notify('entity_change_notifications', row_to_json(payload)::TEXT)
             FROM payload
