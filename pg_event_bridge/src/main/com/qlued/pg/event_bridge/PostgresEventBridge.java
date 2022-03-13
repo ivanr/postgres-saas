@@ -123,10 +123,14 @@ public class PostgresEventBridge implements Runnable {
                 // Postgres: "Quoted identifiers can contain any character, except the character
                 // with code zero. (To include a double quote, write two double quotes.)"
                 // https://www.postgresql.org/docs/current/sql-syntax-lexical.html
-
+                //
                 // Note that Statement#enquoteIdentifier doesn't escape, it only enquotes. But
                 // we don't need to escape because we accept only strings that use a limited
                 // character set and don't allow double quotes.
+                //
+                // Aside: If wanted to quote identifiers portably, a call to
+                // Connection.getMetaData().getIdentifierQuoteString() returns what to use.
+
                 stmt.executeUpdate("LISTEN " + stmt.enquoteIdentifier(channelName, true));
             }
 
