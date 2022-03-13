@@ -83,4 +83,3 @@ INSERT INTO users ( name ) VALUES ('John');
 
 UPDATE users SET name = 'Smith';
 
-DELETE FROM users;

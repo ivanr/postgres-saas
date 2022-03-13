@@ -1,5 +1,6 @@
 
 rootProject.name = 'postgres-saas'
 
+include 'debezium'
 include 'event_bridge'
 include 'schema'
