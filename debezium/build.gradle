@@ -12,13 +12,13 @@ repositories {
 dependencies {
 
     // https://mvnrepository.com/artifact/io.debezium/debezium-api
-    implementation 'io.debezium:debezium-api:1.8.1.Final'
+    implementation 'io.debezium:debezium-api:1.9.0.Beta1'
 
     // https://mvnrepository.com/artifact/io.debezium/debezium-embedded
-    implementation 'io.debezium:debezium-embedded:1.8.1.Final'
+    implementation 'io.debezium:debezium-embedded:1.9.0.Beta1'
 
     // https://mvnrepository.com/artifact/io.debezium/debezium-connector-postgres
-    implementation 'io.debezium:debezium-connector-postgres:1.8.1.Final'
+    implementation 'io.debezium:debezium-connector-postgres:1.9.0.Beta1'
 
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation "org.slf4j:slf4j-api:1.7.36"

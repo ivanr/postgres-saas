@@ -8,10 +8,12 @@ import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.RecordChangeEvent;
 import io.debezium.engine.format.ChangeEventFormat;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.storage.MemoryOffsetBackingStore;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.function.Function;
 
 /*
@@ -73,7 +75,7 @@ public class Main {
 
         engine = DebeziumEngine.create(ChangeEventFormat.of(Connect.class))
                 .using(config.asProperties())
-                .notifying(this::handleChangeEvent)
+                .notifying(new BatchConsumer())
                 .build();
 
         // Shut down the engine cleanly on JVM exit.
@@ -90,8 +92,32 @@ public class Main {
         engine.run();
     }
 
-    private void handleChangeEvent(RecordChangeEvent<SourceRecord> sourceRecordRecordChangeEvent) {
-        System.err.println("# received change event");
+    // Kinesis consumer implementation:
+    // https://github.com/debezium/debezium/blob/main/debezium-server/debezium-server-kinesis/src/main/java/io/debezium/server/kinesis/KinesisChangeConsumer.java
+    static class BatchConsumer implements DebeziumEngine.ChangeConsumer<RecordChangeEvent<SourceRecord>> {
+
+        @Override
+        public void handleBatch(List<RecordChangeEvent<SourceRecord>> changeEvents,
+                                DebeziumEngine.RecordCommitter<RecordChangeEvent<SourceRecord>> committer) throws InterruptedException {
+            for (RecordChangeEvent<SourceRecord> changeEvent : changeEvents) {
+                log.info("Received change event '{}'", changeEvent);
+
+                SourceRecord record = changeEvent.record();
+                Struct payload = (Struct) record.value();
+                if (payload == null) {
+                    return;
+                }
+
+                // TODO Do something with the record. For example, take a different path
+                //      based on operation: Envelope.Operation.forCode(payload.getString("op").
+                //      If forwarding events, serialize to protocol buffers, or get Debezium
+                //      to send them to us as protocol buffers.
+
+                committer.markProcessed(changeEvent);
+            }
+
+            committer.markBatchFinished();
+        }
     }
 
     public static void main(String[] args) {
