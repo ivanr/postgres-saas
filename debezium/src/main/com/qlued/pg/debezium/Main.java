@@ -7,9 +7,11 @@ import io.debezium.embedded.Connect;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.RecordChangeEvent;
 import io.debezium.engine.format.ChangeEventFormat;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.storage.MemoryOffsetBackingStore;
 
+import java.io.IOException;
 import java.util.function.Function;
 
 /*
@@ -29,6 +31,7 @@ Useful: https://www.digitalocean.com/community/tutorials/how-to-set-up-logical-r
 
  */
 
+@Slf4j
 public class Main {
 
     private DebeziumEngine engine;
@@ -72,6 +75,17 @@ public class Main {
                 .using(config.asProperties())
                 .notifying(this::handleChangeEvent)
                 .build();
+
+        // Shut down the engine cleanly on JVM exit.
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                try {
+                    engine.close();
+                } catch (IOException e) {
+                    log.warn("Exception during engine close", e);
+                }
+            }
+        });
 
         engine.run();
     }
