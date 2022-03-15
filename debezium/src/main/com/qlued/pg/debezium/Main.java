@@ -3,10 +3,10 @@ package com.qlued.pg.debezium;
 import io.debezium.config.Configuration;
 import io.debezium.connector.postgresql.PostgresConnector;
 import io.debezium.connector.postgresql.PostgresConnectorConfig;
-import io.debezium.embedded.Connect;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.RecordChangeEvent;
 import io.debezium.engine.format.ChangeEventFormat;
+import io.debezium.engine.format.Protobuf;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.source.SourceRecord;
@@ -73,9 +73,10 @@ public class Main {
 
                 .build();
 
-        engine = DebeziumEngine.create(ChangeEventFormat.of(Connect.class))
+        //engine = DebeziumEngine.create(ChangeEventFormat.of(Connect.class)) // Consuming SourceRecord instances.
+        engine = DebeziumEngine.create(ChangeEventFormat.of(Protobuf.class))
                 .using(config.asProperties())
-                .notifying(new BatchConsumer())
+                .notifying(new ProtobufBatchConsumer())
                 .build();
 
         // Shut down the engine cleanly on JVM exit.
@@ -92,9 +93,27 @@ public class Main {
         engine.run();
     }
 
-    // Kinesis consumer implementation:
-    // https://github.com/debezium/debezium/blob/main/debezium-server/debezium-server-kinesis/src/main/java/io/debezium/server/kinesis/KinesisChangeConsumer.java
-    static class BatchConsumer implements DebeziumEngine.ChangeConsumer<RecordChangeEvent<SourceRecord>> {
+    // Useful links:
+    // - Debezium Server
+    //   https://github.com/debezium/debezium/blob/main/debezium-server/debezium-server-core/src/main/java/io/debezium/server/DebeziumServer.java
+    // - Kinesis consumer implementation:
+    //   https://github.com/debezium/debezium/blob/main/debezium-server/debezium-server-kinesis/src/main/java/io/debezium/server/kinesis/KinesisChangeConsumer.java
+
+    public class ProtobufBatchConsumer implements DebeziumEngine.ChangeConsumer<RecordChangeEvent<byte[]>> {
+
+        @Override
+        public void handleBatch(List<RecordChangeEvent<byte[]>> events,
+                                DebeziumEngine.RecordCommitter<RecordChangeEvent<byte[]>> committer) throws InterruptedException {
+            for (RecordChangeEvent<byte[]> event : events) {
+                // TODO Forward event.record()
+                committer.markProcessed(event);
+            }
+
+            committer.markBatchFinished();
+        }
+    }
+
+    static class SourceRecordBatchConsumer implements DebeziumEngine.ChangeConsumer<RecordChangeEvent<SourceRecord>> {
 
         @Override
         public void handleBatch(List<RecordChangeEvent<SourceRecord>> changeEvents,
@@ -110,8 +129,6 @@ public class Main {
 
                 // TODO Do something with the record. For example, take a different path
                 //      based on operation: Envelope.Operation.forCode(payload.getString("op").
-                //      If forwarding events, serialize to protocol buffers, or get Debezium
-                //      to send them to us as protocol buffers.
 
                 committer.markProcessed(changeEvent);
             }
