@@ -7,7 +7,7 @@
 --
 -- Reference: https://www.2ndquadrant.com/en/blog/sequential-uuid-generators/
 
-CREATE EXTENSION pgcrypto;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE OR REPLACE FUNCTION gen_chrono_uuid(OUT result UUID) AS $$
 DECLARE

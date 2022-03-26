@@ -54,3 +54,13 @@ VALUES ('John');
 
 UPDATE users
 SET name = 'Smith';
+
+
+-- By default, when a new object is created it is owner by the role that
+-- created. In a situation where we have potentially multiple roles
+-- creating objects in the same schema, we want to keep things simple
+-- and revert to the same underlying object.
+--
+-- TODO Implement via a Flyway callback?
+
+REASSIGN OWNED BY acme_user_app_ddl TO acme_role_owner;

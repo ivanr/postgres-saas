@@ -31,8 +31,8 @@ compileJava {
 }
 
 flyway {
-    url = 'jdbc:postgresql://localhost/saas'
-    user = 'postgres'
+    url = 'jdbc:postgresql://localhost/acme'
+    user = 'acme_user_app_ddl'
     locations = ['classpath:com/qlued/pg/schema']
 }
 
