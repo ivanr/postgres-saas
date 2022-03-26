@@ -46,7 +46,7 @@ ALTER ROLE acme_user_app_ddl SET search_path TO main;
 
 -- We create an admin role, which will have full access to the entire database, but no DDL.
 
-CREATE ROLE acme_role_admin NOLOGIN;
+CREATE ROLE acme_role_admin NOLOGIN BYPASSRLS;
 ALTER ROLE acme_role_admin SET search_path TO main;
 
 -- This role is allowed to connect to the database and use the schema.
@@ -73,9 +73,9 @@ GRANT USAGE ON SCHEMA main TO acme_role_admin_readonly;
 
 -- Configure the default privileges for objects that will be created in the future.
 ALTER DEFAULT PRIVILEGES IN SCHEMA main
-    GRANT ALL ON TABLES TO acme_role_admin_readonly;
+    GRANT SELECT ON TABLES TO acme_role_admin_readonly;
 ALTER DEFAULT PRIVILEGES IN SCHEMA main
-    GRANT ALL ON SEQUENCES TO acme_role_admin_readonly;
+    GRANT SELECT ON SEQUENCES TO acme_role_admin_readonly;
 
 
 -- We create a tenant role, which will have access only to the tenant tables. We will
