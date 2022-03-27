@@ -10,7 +10,7 @@ CREATE TABLE system_vault
     secret    TEXT
 );
 
--- REVOKE ALL ON system_vault FROM PUBLIC;
+REVOKE ALL ON system_vault FROM PUBLIC;
 
 INSERT INTO system_vault (secret_id, secret)
 VALUES ('RLS', '1234');
@@ -23,15 +23,15 @@ VALUES ('RLS', '1234');
 CREATE OR REPLACE FUNCTION rls_set_tenant_id(p_tenant_id TEXT, p_secret TEXT) RETURNS TEXT AS
 $$
 DECLARE
-    v_data             TEXT;
+    v_data_tbs         TEXT;
     v_signature        BYTEA;
     v_signed_tenant_id TEXT;
 
 BEGIN
 
-    v_data := p_tenant_id || ':' || TRUNC(EXTRACT(epoch FROM now()));
-    v_signature := hmac(v_data, p_secret, 'sha256');
-    v_signed_tenant_id := v_data || ':' || encode(v_signature, 'hex');
+    v_data_tbs := p_tenant_id || '~' || NOW();
+    v_signature := hmac(v_data_tbs, p_secret, 'sha256');
+    v_signed_tenant_id := v_data_tbs || '~' || encode(v_signature, 'hex');
 
     PERFORM set_config('rls.signed_tenant_id', v_signed_tenant_id, false);
 
@@ -47,17 +47,17 @@ $$ LANGUAGE plpgsql
 -- is designed for use with row-level security policies. It
 -- runs under the identity of the owner, which enables it to
 -- access the underlying HMAC key to verify the signature.
-CREATE OR REPLACE FUNCTION rls_get_tenant_id() RETURNS UUID AS
+CREATE OR REPLACE FUNCTION rls_get_tenant_id() RETURNS TEXT AS
 $$
 DECLARE
-    v_data             TEXT;
+    v_data_tbs         TEXT;
     v_tenant_id        TEXT;
     v_parts            TEXT[];
     v_secret           TEXT;
     v_signature_theirs BYTEA;
     v_signature_ours   BYTEA;
     v_signed_tenant_id TEXT;
-    v_timestamp        INT;
+    v_timestamp        TEXT;
 
 BEGIN
 
@@ -71,23 +71,27 @@ BEGIN
 
     -- Get the signed token.
 
-    v_signed_tenant_id := current_setting('rls.signed_tenant_id', true);
+    v_signed_tenant_id := current_setting('rls.signed_tenant_id', /* missing_ok */ true);
 
     IF v_signed_tenant_id IS NULL THEN
-        RAISE EXCEPTION 'RLS: signed tenant_id not found';
+        RAISE EXCEPTION 'RLS: signed tenant_id token not found';
     END IF;
 
-    -- Parse the token and generate our own signature from the same data.
+    -- Extract parts from the token.
 
-    v_parts := regexp_matches(v_signed_tenant_id, '(.*):(.*):(.*)');
+    v_parts := regexp_matches(v_signed_tenant_id, '(.*)~(.*)~(.*)');
+    IF (array_length(v_parts, /* array dimension */ 1)) != 3 THEN
+        RAISE EXCEPTION 'RLS: invalid signed tenant_id token';
+    END IF;
 
-    --v_tenant_id := CAST(v_parts[1] AS INTEGER);
     v_tenant_id := v_parts[1];
     v_timestamp := v_parts[2];
     v_signature_theirs := decode(v_parts[3], 'hex');
 
-    v_data := v_tenant_id || ':' || v_timestamp;
-    v_signature_ours := hmac(v_data, v_secret, 'sha256');
+    -- Generate our own signature.
+
+    v_data_tbs := v_tenant_id || '~' || v_timestamp;
+    v_signature_ours := hmac(v_data_tbs, v_secret, 'sha256');
 
     -- Validate the signature and the timestamp.
 
@@ -95,11 +99,12 @@ BEGIN
         RAISE EXCEPTION 'RLS: invalid signature';
     END IF;
 
-    IF NOW() > to_timestamp(v_timestamp) + INTERVAL '1 hour' THEN
-        RAISE EXCEPTION 'RLS: expired signature';
+    -- The timestamp doesn't change within the transaction so a simple equality check will do.
+    IF NOW()::TEXT != v_timestamp THEN
+        RAISE EXCEPTION 'RLS: invalid timestamp: % %', NOW(), v_timestamp;
     END IF;
 
-    RETURN v_tenant_id::UUID;
+    RETURN v_tenant_id;
 
 END;
 $$ LANGUAGE plpgsql

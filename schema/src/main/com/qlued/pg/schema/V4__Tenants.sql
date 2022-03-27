@@ -22,7 +22,7 @@ ALTER TABLE tenant_notes
     ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY tenant_notes_policy ON tenant_notes
-    USING (tenant_id = rls_get_tenant_id());
+    USING (tenant_id = rls_get_tenant_id()::UUID);
 
 GRANT ALL ON tenant_notes TO acme_role_tenant;
 
