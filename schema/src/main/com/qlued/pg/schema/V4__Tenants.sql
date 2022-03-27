@@ -1,3 +1,6 @@
+
+-- tenants
+
 CREATE TABLE tenants
 (
     tenant_id UUID DEFAULT gen_chrono_uuid(),
@@ -6,6 +9,17 @@ CREATE TABLE tenants
 
     PRIMARY KEY (tenant_id)
 );
+
+ALTER TABLE tenants
+    ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY tenants_policy ON tenants
+    USING (tenant_id = rls_get_tenant_id()::UUID);
+
+GRANT ALL ON tenants TO acme_role_tenant;
+
+
+-- tenant_notes
 
 CREATE TABLE tenant_notes
 (
