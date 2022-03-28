@@ -1,1 +1,1 @@
-# postgres-saas
+A template for how to build a secure multi-tenant SaaS application using Java and PostgreSQL. Work in progress.
