@@ -6,21 +6,23 @@
 -- we will keep our row-level security secret.
 CREATE TABLE system_vault
 (
-    secret_id TEXT,
-    secret    TEXT
+    partition TEXT NOT NULL,
+    key_id    TEXT NOT NULL,
+    key       TEXT NOT NULL,
+    PRIMARY KEY (partition, key_id)
 );
 
 REVOKE ALL ON system_vault FROM PUBLIC;
 
-INSERT INTO system_vault (secret_id, secret)
-VALUES ('rls.app.1', '1234');
+INSERT INTO system_vault (partition, key_id, key)
+VALUES ('RLS', 'app.1', '1234');
 
 
 -- Creates a signed token that gives the current connection permission
 -- to access data that belongs to the specified organisation. This function
 -- doesn't do anything special; it runs under the identity of the caller
 -- and creates a HMAC signature with the provided key.
-CREATE OR REPLACE FUNCTION rls_set_tenant_id(p_tenant_id TEXT, p_key_id TEXT, p_secret TEXT) RETURNS TEXT AS
+CREATE OR REPLACE FUNCTION rls_set_tenant_id(p_tenant_id TEXT, p_key_id TEXT, p_key TEXT) RETURNS TEXT AS
 $$
 DECLARE
     v_data_tbs         TEXT;
@@ -39,14 +41,14 @@ BEGIN
         RAISE EXCEPTION 'RLS: character ~ not allowed in parameter key_id';
     END IF;
 
-    IF regexp_matches(p_secret, '~') THEN
+    IF regexp_matches(p_key, '~') THEN
         RAISE EXCEPTION 'RLS: character ~ not allowed in parameter secret';
     END IF;
 
     -- Sign the tenant identifier.
 
     v_data_tbs := p_tenant_id || '~' || p_key_id || '~' || NOW();
-    v_signature := hmac(v_data_tbs, p_secret, 'sha256');
+    v_signature := hmac(v_data_tbs, p_key, 'sha256');
     v_signed_tenant_id := v_data_tbs || '~' || encode(v_signature, 'hex');
 
     -- Store the tenant token in the session storage for the other function to pick up.
@@ -72,7 +74,7 @@ DECLARE
     v_tenant_id        TEXT;
     v_key_id           TEXT;
     v_parts            TEXT[];
-    v_secret           TEXT;
+    v_key              TEXT;
     v_signature_theirs BYTEA;
     v_signature_ours   BYTEA;
     v_signed_tenant_id TEXT;
@@ -102,7 +104,7 @@ BEGIN
 
     -- Get the HMAC key from the system vault table.
 
-    SELECT secret INTO v_secret FROM system_vault WHERE secret_id = 'rls.' || v_key_id;
+    SELECT key INTO v_key FROM system_vault WHERE partition = 'RLS' AND key_id = v_key_id;
 
     IF NOT FOUND THEN
         RAISE EXCEPTION 'RLS: unknown key: rls.%s', v_key_id ;
@@ -111,7 +113,7 @@ BEGIN
     -- Generate our own signature.
 
     v_data_tbs := v_tenant_id || '~' || v_key_id || '~' || v_timestamp;
-    v_signature_ours := hmac(v_data_tbs, v_secret, 'sha256');
+    v_signature_ours := hmac(v_data_tbs, v_key, 'sha256');
 
     -- Validate the signature and the timestamp.
 
