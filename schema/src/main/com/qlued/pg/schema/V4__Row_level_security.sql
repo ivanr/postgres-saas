@@ -1,22 +1,9 @@
+
 -- Based on  https://www.2ndquadrant.com/en/blog/application-users-vs-row-level-security/
 --       and https://github.com/2ndQuadrant/rls-examples/blob/master/signed-vault/signed_vault--1.0.sql
 
--- This table is designed to hold secrets that functions
--- can access, but database users can't. This is where
--- we will keep our row-level security secret.
-CREATE TABLE system_vault
-(
-    partition TEXT NOT NULL,
-    key_id    TEXT NOT NULL,
-    key       TEXT NOT NULL,
-    PRIMARY KEY (partition, key_id)
-);
-
-REVOKE ALL ON system_vault FROM PUBLIC;
-
 INSERT INTO system_vault (partition, key_id, key)
 VALUES ('RLS', 'app.1', '1234');
-
 
 -- Creates a signed token that gives the current connection permission
 -- to access data that belongs to the specified organisation. This function
