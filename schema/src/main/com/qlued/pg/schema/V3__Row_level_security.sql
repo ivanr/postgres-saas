@@ -29,9 +29,27 @@ DECLARE
 
 BEGIN
 
+    -- Check that the input parameters are correctly formed.
+
+    IF regexp_matches(p_tenant_id, '~') THEN
+        RAISE EXCEPTION 'RLS: character ~ not allowed in parameter tenant_id';
+    END IF;
+
+    IF regexp_matches(p_key_id, '~') THEN
+        RAISE EXCEPTION 'RLS: character ~ not allowed in parameter key_id';
+    END IF;
+
+    IF regexp_matches(p_secret, '~') THEN
+        RAISE EXCEPTION 'RLS: character ~ not allowed in parameter secret';
+    END IF;
+
+    -- Sign the tenant identifier.
+
     v_data_tbs := p_tenant_id || '~' || p_key_id || '~' || NOW();
     v_signature := hmac(v_data_tbs, p_secret, 'sha256');
     v_signed_tenant_id := v_data_tbs || '~' || encode(v_signature, 'hex');
+
+    -- Store the tenant token in the session storage for the other function to pick up.
 
     PERFORM set_config('rls.signed_tenant_id', v_signed_tenant_id, false);
 
