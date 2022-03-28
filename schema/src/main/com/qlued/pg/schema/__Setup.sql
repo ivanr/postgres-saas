@@ -90,3 +90,16 @@ GRANT CONNECT ON DATABASE acme TO acme_role_tenant;
 GRANT USAGE ON SCHEMA main TO acme_role_tenant;
 
 -- This role doesn't get access to any tables by default.
+
+
+-- We now create a tenant user account for the main application.
+
+CREATE ROLE acme_user_app_tenant LOGIN;
+ALTER ROLE acme_user_app_tenant SET search_path TO main;
+
+-- This role is allowed to connect to the database and use the schema.
+GRANT CONNECT ON DATABASE acme TO acme_user_app_tenant;
+GRANT USAGE ON SCHEMA main TO acme_user_app_tenant;
+
+-- Alias user to the corresponding role acme_user_app_tenant.
+GRANT acme_role_tenant TO acme_user_app_tenant;
