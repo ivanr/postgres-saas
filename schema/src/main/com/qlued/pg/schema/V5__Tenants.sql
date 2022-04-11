@@ -1,4 +1,3 @@
-
 -- tenants
 
 CREATE TABLE tenants
@@ -23,7 +22,7 @@ GRANT ALL ON tenants TO acme_role_tenant;
 
 CREATE TABLE tenant_notes
 (
-    tenant_id UUID,
+    tenant_id UUID NOT NULL REFERENCES tenants (tenant_id),
 
     note_id   UUID DEFAULT gen_chrono_uuid(),
 
