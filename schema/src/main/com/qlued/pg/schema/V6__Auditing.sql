@@ -17,7 +17,7 @@
  */
 
 -- TODO In our design, user accounts are separate from tenants. What this means is that
---      user activity doesn't belong to tenants. Although this gives us flexibility to
+--      user activity doesn't belong to the tenants. Although this gives us flexibility to
 --      support some interesting use cases (e.g., consultants and support staff), it
 --      also creates problems. For example, it's a reasonable to expect to see authentication
 --      failures associated with a corporate user. How do we resolve that? One way might
@@ -31,66 +31,76 @@
 
 CREATE TABLE tenant_audit_log
 (
+    tenant_id               UUID        NOT NULL REFERENCES tenants (tenant_id) ON DELETE CASCADE,
 
-    tenant_id                      UUID        NOT NULL REFERENCES tenants (tenant_id),
-
-    event_id                       UUID        NOT NULL,
+    event_id                UUID        NOT NULL DEFAULT gen_chrono_uuid(),
 
     PRIMARY KEY (tenant_id, event_id),
 
-    -- Principal information.
 
-    -- Who is the principal? For example: internal, external (e.g., support staff) and system.
-    principal_type                 TEXT        NOT NULL, -- TODO Enum.
+    -- Actor information.
+
+    -- Who is the principal? For example: tenant user, external party user
+    -- (e.g., support staff), system, and anonymous activity.
+    actor_type              TEXT        NOT NULL, -- TODO Enum.
 
     -- Activity of support staff is recorded via their own identities, which are
     -- created on the fly. Such tenant user records probably shouldn't identify
     -- the staff, but show as their organization instead. In the UI we probably
     -- want to show just one meta tenant user, rather than the individual users.
 
-    tenant_user_id                 UUID,                 -- TODO tenant_user_id FK
+    tenant_user_id          UUID REFERENCES tenant_users (tenant_user_id),
 
-    tenant_user_service_account_id UUID,
+    -- To keep track of users' service accounts, for example for CLI and API access.
+    tenant_user_identity_id UUID,
 
-    external_tenant_id             UUID REFERENCES tenants (tenant_id),
+    -- Used to track the identity of the external/third-party organization for
+    -- audit logs created for external users such as support staff.
+    external_party_id       TEXT,
 
 
     -- Core event metadata, such as time and access location.
 
-    timestamp                      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    timestamp               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    remote_addr                    TEXT,
+    -- Tracks means of interaction with the platform. In most cases this
+    -- will be "app" or "api", but also other components where that makes sense.
+    interface               TEXT        NOT NULL, -- TODO Enum.
 
-    session_id                     TEXT,
+    remote_addr             TEXT,
 
-    device_id                      TEXT,
+    session_id              TEXT,
 
-    -- Tracing information.
+    device_id               TEXT,
 
-    request_id                     TEXT,
+    request_id              TEXT,
 
-    trace                          TEXT,
 
-    span                           TEXT,
+    -- Information about the activity.
 
-    -- Information about the recorded activity.
+    category                TEXT        NOT NULL, -- TODO Enum
 
-    category                       TEXT        NOT NULL, -- TODO Enum
+    activity                TEXT,
 
-    activity                       TEXT,
+    severity                TEXT        NOT NULL, -- TODO Enum
 
-    severity                       TEXT        NOT NULL, -- TODO Enum
+    description             TEXT,
+
 
     -- Identity of the affected resource.
 
-    resource_id                    UUID,
+    resource_id             UUID,
 
-    resource_type                  TEXT,                 -- TODO Must not be NULL if resource_id is not NULL.
+    resource_type           TEXT,                 -- TODO Must not be NULL if resource_id is not NULL.
+
 
     -- Additional data associated with the event.
 
-    attachment                     JSONB,
+    attachment              JSONB,
 
-    attachment_type                TEXT                  -- TODO Must not be NULL if attachment is not NULL.
-
+    attachment_type         TEXT                  -- TODO Must not be NULL if attachment is not NULL.
 );
+
+-- TODO Prevent tenant_audit_log updates and deletes.
+
+-- TODO Partition the tenant_audit_log table.

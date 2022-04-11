@@ -18,11 +18,33 @@ CREATE POLICY tenants_policy ON tenants
 GRANT ALL ON tenants TO acme_role_tenant;
 
 
+-- tenant_users
+
+CREATE TABLE tenant_users
+(
+    tenant_id      UUID NOT NULL REFERENCES tenants (tenant_id) ON DELETE CASCADE,
+
+    tenant_user_id UUID DEFAULT gen_chrono_uuid(),
+
+    name           TEXT NOT NULL,
+
+    PRIMARY KEY (tenant_id, tenant_user_id)
+);
+
+ALTER TABLE tenant_users
+    ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_users_policy ON tenant_users
+    USING (tenant_id = rls_get_tenant_id()::UUID);
+
+GRANT ALL ON tenant_users TO acme_role_tenant;
+
+
 -- tenant_notes
 
 CREATE TABLE tenant_notes
 (
-    tenant_id UUID NOT NULL REFERENCES tenants (tenant_id),
+    tenant_id UUID NOT NULL REFERENCES tenants (tenant_id) ON DELETE CASCADE,
 
     note_id   UUID DEFAULT gen_chrono_uuid(),
 
