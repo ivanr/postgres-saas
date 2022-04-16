@@ -105,56 +105,80 @@ CREATE TABLE tenant_audit_log
 
 -- TODO Row-level security.
 
--- TODO Prevent tenant_audit_log updates and deletes.
+-- TODO Prevent tenant_audit_log updates and deletes; permissions and triggers?
 
 -- TODO Partition the tenant_audit_log table.
 
--- TODO Limits.
+-- TODO Limits on fields.
 
 -- TODO On insert, the timestamp must be NOW().
+
+-- TODO Store event as JSON, so as to be compatible with other means of storage?
+
+-- TODO Sign events?
 
 /*
 
 Events
 ------
 
-user:
+user.lifecycle:
 
+ requested
+ invited
+ invite_accepted
  created
  disabled
  enabled
- deleted
+ requested_deletion
+ deletion_refused
+ deleted_auto
+ deleted_admin
+
+user.auth
 
  signed_in
  signed_out
+ new_device
 
- used_new_device
+ password_success
+ password_failed
+ mfa_hotp_success
+ mfa_hotp_failed
+ backup_code_success
+ backup_code_failed
+ rme_success
+ rme_failed
+ network_success
+ network_failed
 
- password_reset_requested
- password_reset_failed
- password_changed
- password_auth_successful
- password_auth_failed
- mfa_enabled
- mfa_disabled
- mfa_disabled_admin?
- mfa_codes_generated
- mfa_codes_viewed
- mfa_auth_hotp_successful
- mfa_auth_hotp_failed
- mfa_auth_code_successful
- mfa_auth_code_failed
- rme_auth_successful
- rme_auth_failed
- email_change_requested
- email_change_cancelled
- email_changed
- network_auth_successful
- network_auth_failed
+ -- auth: password, 2fa, rme + network access list
 
  auth_blocked
- auth_unblocked
  auth_refused
+
+ password_changed
+ password_changed_admin
+ password_reset_requested
+ password_reset_failed
+ password_changed_reset
+
+ mfa_enabled
+ mfa_disabled
+ mfa_disabled_admin
+ mfa_codes_generated
+ mfa_codes_viewed
+
+ email_change_requested
+ email_change_cancelled
+ email_change_confirmed
+
+
+
+ joined_tenant
+ left_tenant
+ -- tenant_permissions
+
 
  tenant_authz_successful
  -- tenant_authz_failed: mfa, network restrictions
@@ -186,5 +210,7 @@ tenant:
  user_access_refused
 
  user_session_authorized
+
+ forbidden action
 
  */
