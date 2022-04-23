@@ -1,3 +1,27 @@
 
 - Evaluate: Reactive PostgreSQL Client
   https://vertx.io/docs/vertx-pg-client/java/
+
+
+TODO
+====
+
+- User expiration date.
+
+- Service accounts are like user accounts, except that they're not attached to individuals.
+
+- User accounts can be owned by a tenant, or they can exist separately. For example,
+  service accounts are always owned by tenants.
+
+- Personal service account or access token. Limited subaccount with separate authentication
+  and configured permissions, but shared identity with the parent account.
+
+  - Track purpose.
+
+  - Should personal service accounts be tenant specific? Or specify which tenants to acces.
+
+  - Inherit all permissions vs give only selected permissions.
+
+  - Permissions have to be checked twice, first on the subaccount then on the
+    main account. Either that, or trim subaccount permissions as permissions are
+    changed on the main account.

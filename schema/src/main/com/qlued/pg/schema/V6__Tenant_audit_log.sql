@@ -31,9 +31,9 @@
 
 CREATE TABLE tenant_audit_log
 (
-    tenant_id               UUID        NOT NULL REFERENCES tenants (tenant_id) ON DELETE CASCADE,
+    tenant_id                      UUID        NOT NULL REFERENCES tenants (tenant_id) ON DELETE CASCADE,
 
-    event_id                UUID        NOT NULL DEFAULT gen_chrono_uuid(),
+    event_id                       UUID        NOT NULL DEFAULT gen_chrono_uuid(),
 
     PRIMARY KEY (tenant_id, event_id),
 
@@ -42,80 +42,75 @@ CREATE TABLE tenant_audit_log
 
     -- Who is the principal? For example: tenant user, external/third-party user
     -- (e.g., support staff), system, and anonymous activity.
-    actor_type              TEXT        NOT NULL, -- TODO Enum.
+    principal_type                 TEXT        NOT NULL, -- TODO Enum.
 
     -- Activity of support staff is recorded via their own identities, which are
     -- created on the fly. Such tenant user records probably shouldn't identify
     -- the staff, but show as their organization instead. In the UI we probably
     -- want to show just one meta tenant user, rather than the individual users.
 
-    tenant_user_id          UUID REFERENCES tenant_users (tenant_user_id),
+    tenant_user_id                 UUID REFERENCES tenant_users (tenant_user_id),
 
     -- To keep track of users' service accounts, for example for CLI and API access.
-    tenant_user_identity_id UUID,
+    tenant_user_service_account_id UUID,
 
     -- Used to track the identity of the external/third-party organization for
     -- audit logs created for external users such as support staff.
-    external_tenant_id      UUID REFERENCES tenants (tenant_id) ON DELETE RESTRICT,
+    external_tenant_id             UUID REFERENCES tenants (tenant_id) ON DELETE RESTRICT,
 
 
     -- Core event metadata, such as time and access location.
 
-    timestamp               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    timestamp                      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     -- Tracks means of interaction with the platform. In most cases this
     -- will be "app" or "api", but also other components where that makes sense.
-    interface               TEXT        NOT NULL, -- TODO Enum.
+    interface                      TEXT        NOT NULL, -- TODO Enum.
 
-    remote_addr             TEXT,                 -- TODO Better type.
+    remote_addr                    TEXT,                 -- TODO Better type.
 
-    session_id              TEXT,
+    session_id                     TEXT,
 
-    device_id               TEXT,
+    device_id                      TEXT,
 
     -- Unique transaction/request ID, where applicable. Usually generated
     -- at the edge, for example a CDN, reverse proxy, or web server.
-    transaction_id          TEXT,
+    request_id                     TEXT,
 
 
     -- Information about the activity itself.
 
-    category                TEXT        NOT NULL, -- TODO Enum
+    -- For HTTP events, contains the URL path, including the query string.
+    resource                       TEXT,
 
-    activity                TEXT,
+    -- For example, 'http.get' or 'user.auth.signed_in'.
+    action                         TEXT,
 
-    severity                TEXT        NOT NULL, -- TODO Enum
+    -- Tracks whether the action was successful, using HTTP status codes.
+    status                         TEXT,                 -- TODO Enum
 
-    description             TEXT,
+    duration                       INTERVAL,
+
+    severity                       TEXT        NOT NULL, -- TODO Enum
+
+    -- Optional, human-readable description of the event.
+    description                    TEXT,
 
 
-    -- Identity of the affected resource.
+    -- Additional custom data associated with the event.
 
-    resource_id             UUID,
+    attachment                     JSONB,
 
-    resource_type           TEXT,                 -- TODO Must not be NULL if resource_id is not NULL.
-
-
-    -- Additional data associated with the event.
-
-    attachment              JSONB,
-
-    attachment_type         TEXT                  -- TODO Must not be NULL if attachment is not NULL.
+    attachment_type                TEXT                  -- TODO Must not be NULL if attachment is not NULL.
 );
 
--- TODO Row-level security.
+-- TODO Row-level security. Tenants can only read the access logs.
 
--- TODO Prevent tenant_audit_log updates and deletes; permissions and triggers?
+-- TODO Writing done on a separate connection and a different role. No updates or deletes (permissions + triggers), timestamp enforced.
 
 -- TODO Partition the tenant_audit_log table.
 
--- TODO Limits on fields.
-
--- TODO On insert, the timestamp must be NOW().
-
--- TODO Store event as JSON, so as to be compatible with other means of storage?
-
--- TODO Sign events?
+-- TODO Fix data types and add limits.
 
 /*
 
