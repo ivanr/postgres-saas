@@ -65,7 +65,7 @@ CREATE TABLE tenant_audit_log
 
     -- Tracks means of interaction with the platform. In most cases this
     -- will be "app" or "api", but also other components where that makes sense.
-    interface                      TEXT        NOT NULL, -- TODO Enum.
+    origin                         TEXT        NOT NULL, -- TODO Enum.
 
     remote_addr                    TEXT,                 -- TODO Better type.
 
@@ -75,7 +75,7 @@ CREATE TABLE tenant_audit_log
 
     -- Unique transaction/request ID, where applicable. Usually generated
     -- at the edge, for example a CDN, reverse proxy, or web server.
-    request_id                     TEXT,
+    transaction_id                 TEXT,
 
 
     -- Information about the activity itself.
