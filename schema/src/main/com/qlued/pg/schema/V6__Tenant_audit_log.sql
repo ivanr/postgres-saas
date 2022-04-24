@@ -49,7 +49,7 @@ CREATE TABLE tenant_audit_log
     -- the staff, but show as their organization instead. In the UI we probably
     -- want to show just one meta tenant user, rather than the individual users.
 
-    tenant_user_id                 UUID REFERENCES tenant_users (tenant_user_id),
+    tenant_user_id                 UUID, -- REFERENCES tenant_users (tenant_user_id),
 
     -- To keep track of users' service accounts, for example for CLI and API access.
     tenant_user_service_account_id UUID,

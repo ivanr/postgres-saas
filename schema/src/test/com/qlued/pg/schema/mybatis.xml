@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <properties>
+        <property name="org.apache.ibatis.parsing.PropertyParser.enable-default-value" value="true"/>
+        <property name="db.url" value="jdbc:postgresql://localhost/acme"/>
+        <property name="db.driver" value="org.postgresql.Driver"/>
+    </properties>
+
+    <environments default="none">
+
+        <environment id="ddl">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${db.driver}"/>
+                <property name="url" value="${db.url}"/>
+                <property name="username" value="acme_user_app_ddl"/>
+            </dataSource>
+        </environment>
+
+        <environment id="admin">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${db.driver}"/>
+                <property name="url" value="${db.url}"/>
+                <!-- TODO Use admin (non-ddl) account. -->
+                <property name="username" value="acme_user_app_ddl"/>
+            </dataSource>
+        </environment>
+
+        <environment id="tenant">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${db.driver}"/>
+                <property name="url" value="${db.url}"/>
+                <property name="username" value="acme_user_app_tenant"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <mappers>
+        <mapper class="com.qlued.pg.schema.TestMapper"/>
+    </mappers>
+
+</configuration>

@@ -7,12 +7,33 @@ buildscript {
 }
 
 plugins {
-    id 'java-library'
+    id "java-library"
     id "org.flywaydb.flyway" version "8.5.2"
+    id "io.freefair.lombok" version "6.4.3"
 }
 
 repositories {
     mavenCentral()
+}
+
+dependencies {
+    // Tests dependencies.
+
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+
+    // https://mvnrepository.com/artifact/org.flywaydb/flyway-core/4.2.0
+    testImplementation 'org.flywaydb:flyway-core:8.5.9'
+
+    // https://mvnrepository.com/artifact/org.mybatis/mybatis
+    testImplementation 'org.mybatis:mybatis:3.5.9'
+
+    // https://mvnrepository.com/artifact/org.postgresql/postgresql
+    testImplementation group: 'org.postgresql', name: 'postgresql', version: '42.2.6'
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
 }
 
 sourceSets {
@@ -23,6 +44,7 @@ sourceSets {
 
     test {
         java.srcDirs = ["src/test/"]
+        resources.srcDirs = ["src/test/"]
     }
 }
 
