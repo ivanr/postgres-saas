@@ -135,6 +135,9 @@ user.auth
  signed_in
  signed_out
  new_device
+ new_ip -- emitted every time a new IP address is associated with a session; it's more complicated
+           to detect new IP addresses if stateless auth is used, but one could keep a list of
+           IP addressed observed recently and emit events based on that.
 
  password_success
  password_failed
@@ -151,6 +154,8 @@ user.auth
 
  auth_blocked
  auth_refused
+
+ -- todo: general purpose anomaly indicator
 
  password_changed
  password_changed_admin
