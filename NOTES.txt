@@ -6,6 +6,15 @@
 TODO
 ====
 
+- Flyway
+
+  - Model in one subproject, database code in second, schema in third
+
+  - Embed the above in the application as needed
+
+  - Standalone CLI to run Flyway w/picocli
+
+
 - User expiration date.
 
 - Service accounts are like user accounts, except that they're not attached to individuals.
