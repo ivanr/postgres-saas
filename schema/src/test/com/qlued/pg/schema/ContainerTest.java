@@ -12,7 +12,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Properties;
 
 @Testcontainers
@@ -33,7 +32,6 @@ public class ContainerTest {
                         postgres.getPassword())
                 .locations("com/qlued/pg/schema")
                 .failOnMissingLocations(true)
-                .placeholders(Map.of("dbname", postgres.getDatabaseName()))
                 .load();
 
         flyway.clean();

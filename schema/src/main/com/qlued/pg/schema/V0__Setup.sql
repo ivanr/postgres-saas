@@ -1,5 +1,24 @@
 -- Use a superuser account for these operations. This setup script
--- assumes a connection to an empty database.
+-- assumes a connection to an empty database. Because we don't know
+-- the name of the database in advance, we use procedures to run
+-- dynamically constructed SQL.
+
+CREATE OR REPLACE PROCEDURE alter_current_database_set_owner(new_owner text)
+    LANGUAGE plpgsql AS
+$$
+BEGIN
+    EXECUTE format('ALTER DATABASE %I OWNER TO %I', current_database(), new_owner);
+END
+$$;
+
+CREATE OR REPLACE PROCEDURE grant_connect_to_current_database(role text)
+    LANGUAGE plpgsql AS
+$$
+BEGIN
+    EXECUTE format('GRANT CONNECT ON DATABASE %I TO %I', current_database(), role);
+END
+$$;
+
 
 -- We start by creating a new role that will serve as the database
 -- owner. Basically, the idea is to avoid using superuser accounts
@@ -9,7 +28,7 @@ CREATE ROLE acme_role_owner NOLOGIN;
 
 -- Since the current database was created outside this script,
 -- change the owner to the role we've just created.
-ALTER DATABASE ${dbname} OWNER TO acme_role_owner;
+CALL alter_current_database_set_owner('acme_role_owner');
 
 -- CVE-2018-1058: By default (up until version 15), all users can create
 -- objects in the public schema. Removing this permission improves security.
@@ -45,7 +64,7 @@ CREATE ROLE acme_role_admin NOLOGIN BYPASSRLS;
 ALTER ROLE acme_role_admin SET search_path TO main;
 
 -- This role is allowed to connect to the database and use the schema.
-GRANT CONNECT ON DATABASE ${dbname} TO acme_role_admin;
+CALL grant_connect_to_current_database('acme_role_admin');
 GRANT USAGE ON SCHEMA main TO acme_role_admin;
 
 -- Configure the default privileges for objects that will be created in the future.
@@ -63,7 +82,7 @@ CREATE ROLE acme_role_admin_readonly NOLOGIN;
 ALTER ROLE acme_role_admin_readonly SET search_path TO main;
 
 -- This role is allowed to connect to the database and use the schema.
-GRANT CONNECT ON DATABASE ${dbname} TO acme_role_admin_readonly;
+CALL grant_connect_to_current_database('acme_role_admin_readonly');
 GRANT USAGE ON SCHEMA main TO acme_role_admin_readonly;
 
 -- Configure the default privileges for objects that will be created in the future.
@@ -81,7 +100,7 @@ CREATE ROLE acme_role_tenant NOLOGIN;
 ALTER ROLE acme_role_tenant SET search_path TO main;
 
 -- This role is allowed to connect to the database and use the schema.
-GRANT CONNECT ON DATABASE ${dbname} TO acme_role_tenant;
+CALL grant_connect_to_current_database('acme_role_tenant');
 GRANT USAGE ON SCHEMA main TO acme_role_tenant;
 
 -- This role doesn't get access to any tables by default.
@@ -93,7 +112,7 @@ CREATE ROLE acme_user_app_tenant LOGIN;
 ALTER ROLE acme_user_app_tenant SET search_path TO main;
 
 -- This role is allowed to connect to the database and use the schema.
-GRANT CONNECT ON DATABASE ${dbname} TO acme_user_app_tenant;
+CALL grant_connect_to_current_database('acme_user_app_tenant');
 GRANT USAGE ON SCHEMA main TO acme_user_app_tenant;
 
 -- Alias user to the corresponding role acme_user_app_tenant.
