@@ -60,7 +60,7 @@ ALTER ROLE acme_user_app_ddl SET search_path TO main;
 
 -- We create an admin role, which will have full access to the entire database, but no DDL.
 
-CREATE ROLE acme_role_admin NOLOGIN BYPASSRLS;
+CREATE ROLE acme_role_admin NOLOGIN;
 ALTER ROLE acme_role_admin SET search_path TO main;
 
 -- This role is allowed to connect to the database and use the schema.
@@ -68,9 +68,9 @@ CALL grant_connect_to_current_database('acme_role_admin');
 GRANT USAGE ON SCHEMA main TO acme_role_admin;
 
 -- Configure the default privileges for objects that will be created in the future.
-ALTER DEFAULT PRIVILEGES IN SCHEMA main
+ALTER DEFAULT PRIVILEGES FOR ROLE acme_user_app_ddl IN SCHEMA main
     GRANT ALL ON TABLES TO acme_role_admin;
-ALTER DEFAULT PRIVILEGES IN SCHEMA main
+ALTER DEFAULT PRIVILEGES FOR ROLE acme_user_app_ddl IN SCHEMA main
     GRANT ALL ON SEQUENCES TO acme_role_admin;
 
 
@@ -86,9 +86,9 @@ CALL grant_connect_to_current_database('acme_role_admin_readonly');
 GRANT USAGE ON SCHEMA main TO acme_role_admin_readonly;
 
 -- Configure the default privileges for objects that will be created in the future.
-ALTER DEFAULT PRIVILEGES IN SCHEMA main
+ALTER DEFAULT PRIVILEGES FOR ROLE acme_user_app_ddl IN SCHEMA main
     GRANT SELECT ON TABLES TO acme_role_admin_readonly;
-ALTER DEFAULT PRIVILEGES IN SCHEMA main
+ALTER DEFAULT PRIVILEGES FOR ROLE acme_user_app_ddl IN SCHEMA main
     GRANT SELECT ON SEQUENCES TO acme_role_admin_readonly;
 
 
@@ -106,14 +106,21 @@ GRANT USAGE ON SCHEMA main TO acme_role_tenant;
 -- This role doesn't get access to any tables by default.
 
 
--- We now create a tenant user account for the main application.
+-- Admin user account.
+
+CREATE ROLE acme_user_app_admin LOGIN PASSWORD 'acme_user_app_admin' BYPASSRLS;
+ALTER ROLE acme_user_app_admin SET search_path TO main;
+
+CALL grant_connect_to_current_database('acme_user_app_admin');
+GRANT USAGE ON SCHEMA main TO acme_user_app_admin;
+GRANT acme_role_admin TO acme_user_app_admin;
+
+
+-- Tenant user account.
 
 CREATE ROLE acme_user_app_tenant LOGIN PASSWORD 'acme_user_app_tenant';
 ALTER ROLE acme_user_app_tenant SET search_path TO main;
 
--- This role is allowed to connect to the database and use the schema.
 CALL grant_connect_to_current_database('acme_user_app_tenant');
 GRANT USAGE ON SCHEMA main TO acme_user_app_tenant;
-
--- Alias user to the corresponding role acme_user_app_tenant.
 GRANT acme_role_tenant TO acme_user_app_tenant;

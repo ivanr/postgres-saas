@@ -26,9 +26,8 @@
             <dataSource type="POOLED">
                 <property name="driver" value="${db.driver}"/>
                 <property name="url" value="${db.url}"/>
-                <!-- TODO Use admin (non-ddl) account. -->
-                <property name="username" value="acme_user_app_ddl"/>
-                <property name="password" value="acme_user_app_ddl"/>
+                <property name="username" value="acme_user_app_admin"/>
+                <property name="password" value="acme_user_app_admin"/>
             </dataSource>
         </environment>
 
