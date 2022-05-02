@@ -50,8 +50,6 @@ public class ContainerTest {
 
     @Test
     public void test() {
-        //System.out.println(postgres.getJdbcUrl());
-
         try (SqlSession session = sessionFactory.openSession()) {
         }
     }
