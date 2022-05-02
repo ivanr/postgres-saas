@@ -1,5 +1,5 @@
-
--- Use a superuser account for these operations.
+-- Use a superuser account for these operations. This setup script
+-- assumes a connection to an empty database.
 
 -- We start by creating a new role that will serve as the database
 -- owner. Basically, the idea is to avoid using superuser accounts
@@ -7,14 +7,9 @@
 
 CREATE ROLE acme_role_owner NOLOGIN;
 
--- Create the new database, indicating its owner. As the owner, this
--- role will have unlimited privileges without having to grant it
--- permissions explicitly.
-
-CREATE DATABASE acme OWNER acme_role_owner;
-
-\c acme;
-
+-- Since the current database was created outside this script,
+-- change the owner to the role we've just created.
+ALTER DATABASE ${dbname} OWNER TO acme_role_owner;
 
 -- CVE-2018-1058: By default (up until version 15), all users can create
 -- objects in the public schema. Removing this permission improves security.
@@ -50,7 +45,7 @@ CREATE ROLE acme_role_admin NOLOGIN BYPASSRLS;
 ALTER ROLE acme_role_admin SET search_path TO main;
 
 -- This role is allowed to connect to the database and use the schema.
-GRANT CONNECT ON DATABASE acme TO acme_role_admin;
+GRANT CONNECT ON DATABASE ${dbname} TO acme_role_admin;
 GRANT USAGE ON SCHEMA main TO acme_role_admin;
 
 -- Configure the default privileges for objects that will be created in the future.
@@ -68,7 +63,7 @@ CREATE ROLE acme_role_admin_readonly NOLOGIN;
 ALTER ROLE acme_role_admin_readonly SET search_path TO main;
 
 -- This role is allowed to connect to the database and use the schema.
-GRANT CONNECT ON DATABASE acme TO acme_role_admin_readonly;
+GRANT CONNECT ON DATABASE ${dbname} TO acme_role_admin_readonly;
 GRANT USAGE ON SCHEMA main TO acme_role_admin_readonly;
 
 -- Configure the default privileges for objects that will be created in the future.
@@ -86,7 +81,7 @@ CREATE ROLE acme_role_tenant NOLOGIN;
 ALTER ROLE acme_role_tenant SET search_path TO main;
 
 -- This role is allowed to connect to the database and use the schema.
-GRANT CONNECT ON DATABASE acme TO acme_role_tenant;
+GRANT CONNECT ON DATABASE ${dbname} TO acme_role_tenant;
 GRANT USAGE ON SCHEMA main TO acme_role_tenant;
 
 -- This role doesn't get access to any tables by default.
@@ -98,7 +93,7 @@ CREATE ROLE acme_user_app_tenant LOGIN;
 ALTER ROLE acme_user_app_tenant SET search_path TO main;
 
 -- This role is allowed to connect to the database and use the schema.
-GRANT CONNECT ON DATABASE acme TO acme_user_app_tenant;
+GRANT CONNECT ON DATABASE ${dbname} TO acme_user_app_tenant;
 GRANT USAGE ON SCHEMA main TO acme_user_app_tenant;
 
 -- Alias user to the corresponding role acme_user_app_tenant.
