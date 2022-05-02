@@ -108,7 +108,7 @@ GRANT USAGE ON SCHEMA main TO acme_role_tenant;
 
 -- We now create a tenant user account for the main application.
 
-CREATE ROLE acme_user_app_tenant LOGIN;
+CREATE ROLE acme_user_app_tenant LOGIN PASSWORD 'acme_user_app_tenant';
 ALTER ROLE acme_user_app_tenant SET search_path TO main;
 
 -- This role is allowed to connect to the database and use the schema.

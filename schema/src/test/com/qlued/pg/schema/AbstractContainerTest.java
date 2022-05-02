@@ -1,12 +1,11 @@
 package com.qlued.pg.schema;
 
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -15,12 +14,16 @@ import java.io.IOException;
 import java.util.Properties;
 
 @Testcontainers
-public class ContainerTest {
+public abstract class AbstractContainerTest {
 
     @Container
     private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest");
 
-    protected static SqlSessionFactory sessionFactory;
+    protected static SqlSessionFactory ddlSessionFactory;
+
+    protected static SqlSessionFactory adminSessionFactory;
+
+    protected static SqlSessionFactory tenantSessionFactory;
 
     @BeforeAll
     public static void init() throws IOException {
@@ -59,14 +62,21 @@ public class ContainerTest {
         properties.put("db.url", postgres.getJdbcUrl());
         String resource = "com/qlued/pg/schema/mybatis.xml";
 
-        sessionFactory = new SqlSessionFactoryBuilder().build(
+        ddlSessionFactory = new SqlSessionFactoryBuilder().build(
+                Resources.getResourceAsStream(resource),
+                "ddl", properties);
+
+        adminSessionFactory = new SqlSessionFactoryBuilder().build(
                 Resources.getResourceAsStream(resource),
                 "admin", properties);
+
+        tenantSessionFactory = new SqlSessionFactoryBuilder().build(
+                Resources.getResourceAsStream(resource),
+                "tenant", properties);
     }
 
-    @Test
-    public void test() {
-        try (SqlSession session = sessionFactory.openSession()) {
-        }
+    protected boolean isRowLevelSecurityViolation(PersistenceException exception) {
+        return (exception.getMessage() != null)
+                && (exception.getMessage().contains("new row violates row-level security policy"));
     }
 }
