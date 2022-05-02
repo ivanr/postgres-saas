@@ -19,8 +19,6 @@ public abstract class AbstractContainerTest {
     @Container
     private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest");
 
-    protected static SqlSessionFactory ddlSessionFactory;
-
     protected static SqlSessionFactory adminSessionFactory;
 
     protected static SqlSessionFactory tenantSessionFactory;
@@ -61,10 +59,6 @@ public abstract class AbstractContainerTest {
         Properties properties = new Properties();
         properties.put("db.url", postgres.getJdbcUrl());
         String resource = "com/qlued/pg/schema/mybatis.xml";
-
-        ddlSessionFactory = new SqlSessionFactoryBuilder().build(
-                Resources.getResourceAsStream(resource),
-                "ddl", properties);
 
         adminSessionFactory = new SqlSessionFactoryBuilder().build(
                 Resources.getResourceAsStream(resource),
