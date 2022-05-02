@@ -14,16 +14,16 @@ public class InitializeDatabaseExtension implements AfterAllCallback, BeforeAllC
 
     @Override
     public void beforeAll(final ExtensionContext context) {
-        System.out.println("initialize-database: before-all");
+        //System.out.println("initialize-database: before-all");
     }
 
     @Override
     public void close() {
-        System.out.println("initialize-database: close");
+        //System.out.println("initialize-database: close");
     }
 
     @Override
-    public void afterAll(ExtensionContext context) throws Exception {
-        System.out.println("initialize-database: after-all");
+    public void afterAll(ExtensionContext context) {
+        //System.out.println("initialize-database: after-all");
     }
 }

@@ -6,7 +6,6 @@
 
     <properties>
         <property name="org.apache.ibatis.parsing.PropertyParser.enable-default-value" value="true"/>
-        <property name="db.url" value="jdbc:postgresql://localhost/acme"/>
         <property name="db.driver" value="org.postgresql.Driver"/>
     </properties>
 
@@ -18,6 +17,7 @@
                 <property name="driver" value="${db.driver}"/>
                 <property name="url" value="${db.url}"/>
                 <property name="username" value="acme_user_app_ddl"/>
+                <property name="password" value="acme_user_app_ddl"/>
             </dataSource>
         </environment>
 
@@ -28,6 +28,7 @@
                 <property name="url" value="${db.url}"/>
                 <!-- TODO Use admin (non-ddl) account. -->
                 <property name="username" value="acme_user_app_ddl"/>
+                <property name="password" value="acme_user_app_ddl"/>
             </dataSource>
         </environment>
 
@@ -37,6 +38,7 @@
                 <property name="driver" value="${db.driver}"/>
                 <property name="url" value="${db.url}"/>
                 <property name="username" value="acme_user_app_tenant"/>
+                <property name="password" value="acme_user_app_tenant"/>
             </dataSource>
         </environment>
     </environments>

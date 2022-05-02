@@ -53,7 +53,7 @@ ALTER ROLE acme_role_owner SET search_path TO main;
 -- it dangerous. We'll use it only for DDL operations (e.g., database
 -- migrations.)
 
-CREATE ROLE acme_user_app_ddl LOGIN;
+CREATE ROLE acme_user_app_ddl LOGIN PASSWORD 'acme_user_app_ddl';
 GRANT acme_role_owner TO acme_user_app_ddl;
 ALTER ROLE acme_user_app_ddl SET search_path TO main;
 
