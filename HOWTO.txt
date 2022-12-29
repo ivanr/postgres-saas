@@ -18,6 +18,5 @@ Remove docker and volumes:
 Flyway
 ======
 
-# ./gradlew :schema:flywayClean
-# ./gradlew :schema:flywayMigrate
-
+  # ./gradlew :schema:flywayClean
+  # ./gradlew :schema:flywayMigrate
