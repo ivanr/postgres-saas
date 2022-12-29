@@ -59,12 +59,14 @@ CREATE TABLE audit_log
     -- Tracks whether the action was successful, using HTTP status codes.
     status          INTEGER     NOT NULL,
 
-    severity        TEXT        NOT NULL, -- TODO Enum?
+    -- Syslog severities.
+    severity        SMALLINT    NOT NULL,
 
 
     -- Custom data associated with the event.
 
-    attachment_type TEXT,                 -- TODO Must not be NULL if attachment is not NULL.
+    attachment_type TEXT CHECK ((attachment_type IS NULL AND attachment IS NULL) OR
+                                (attachment_type IS NOT NULL AND attachment IS NOT NULL)),
 
     attachment      JSONB
 
