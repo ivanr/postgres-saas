@@ -60,7 +60,3 @@ CREATE POLICY tenant_notes_policy ON tenant_notes
     USING (tenant_id = rls_get_tenant_id()::UUID);
 
 GRANT ALL ON tenant_notes TO acme_role_tenant;
-
-
--- Fix ownership of newly-created objects.
-REASSIGN OWNED BY acme_user_app_ddl TO acme_role_owner;

@@ -6,7 +6,10 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -16,8 +19,11 @@ import java.util.Properties;
 @Testcontainers
 public abstract class AbstractContainerTest {
 
+    private static Logger logger = LoggerFactory.getLogger(AbstractContainerTest.class);
+
     @Container
-    private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest");
+    private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest").
+            withCommand("postgres -c log_statement=all");
 
     protected static SqlSessionFactory adminSessionFactory;
 
@@ -25,9 +31,13 @@ public abstract class AbstractContainerTest {
 
     @BeforeAll
     public static void init() throws IOException {
+        Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(logger);
+        postgres.followOutput(logConsumer);
+
         // Initialize the database. We have to run this as
         // a separate step because we don't want to use the
         // public schema.
+        
         Flyway flywayInit = Flyway.configure()
                 .dataSource(
                         postgres.getJdbcUrl(),
@@ -36,14 +46,13 @@ public abstract class AbstractContainerTest {
                 .sqlMigrationPrefix("M")
                 .locations("com/qlued/pg/schema")
                 .failOnMissingLocations(true)
-                .cleanDisabled(false)
                 .load();
 
-        flywayInit.clean();
         flywayInit.migrate();
 
         // Now run the migrations, using the new "main"
         // schema created during setup.
+
         Flyway flyway = Flyway.configure()
                 .dataSource(
                         postgres.getJdbcUrl(),
@@ -52,10 +61,8 @@ public abstract class AbstractContainerTest {
                 .defaultSchema("main")
                 .locations("com/qlued/pg/schema")
                 .failOnMissingLocations(true)
-                .cleanDisabled(false)
                 .load();
 
-        flyway.clean();
         flyway.migrate();
 
         // Initialize MyBatis.

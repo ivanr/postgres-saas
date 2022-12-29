@@ -12,5 +12,3 @@ CREATE TABLE system_vault
 
 REVOKE ALL ON system_vault FROM PUBLIC;
 
--- Fix ownership of newly-created objects.
-REASSIGN OWNED BY acme_user_app_ddl TO acme_role_owner;

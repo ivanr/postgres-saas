@@ -120,6 +120,3 @@ $$ LANGUAGE plpgsql
     SECURITY DEFINER
     STABLE;
 
-
--- Fix ownership of newly-created objects.
-REASSIGN OWNED BY acme_user_app_ddl TO acme_role_owner;
