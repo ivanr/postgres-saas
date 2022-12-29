@@ -1,0 +1,20 @@
+version: '2'
+
+volumes:
+  postgres-data:
+
+services:
+
+  # https://hub.docker.com/_/postgres
+  postgres:
+    image: "postgres:15.1-alpine"
+    container_name: "pg-database"
+    restart: "unless-stopped"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - ./postgres-initdb.sh:/docker-entrypoint-initdb.d/initdb.sh:ro,delegated
+      - ./schema/src/main/com/qlued/pg/schema/M0__Setup.sql:/docker-entrypoint-initdb.d/setup.sql:ro,delegated
+      - postgres-data:/var/lib/postgresql/data:delegated

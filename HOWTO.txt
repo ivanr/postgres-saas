@@ -1,0 +1,23 @@
+
+Docker
+======
+
+Start containers:
+
+  # docker-compose up -d
+
+Stop containers:
+
+  # docker-compose down
+
+Remove docker and volumes:
+
+ # docker-compose down -v
+
+
+Flyway
+======
+
+# ./gradlew :schema:flywayClean
+# ./gradlew :schema:flywayMigrate
+
