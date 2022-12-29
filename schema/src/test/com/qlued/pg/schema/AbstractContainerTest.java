@@ -36,12 +36,14 @@ public abstract class AbstractContainerTest {
                 .sqlMigrationPrefix("M")
                 .locations("com/qlued/pg/schema")
                 .failOnMissingLocations(true)
+                .cleanDisabled(false)
                 .load();
 
         flywayInit.clean();
         flywayInit.migrate();
 
-        // Build the schema.
+        // Now run the migrations, using the new "main"
+        // schema created during setup.
         Flyway flyway = Flyway.configure()
                 .dataSource(
                         postgres.getJdbcUrl(),
@@ -50,6 +52,7 @@ public abstract class AbstractContainerTest {
                 .defaultSchema("main")
                 .locations("com/qlued/pg/schema")
                 .failOnMissingLocations(true)
+                .cleanDisabled(false)
                 .load();
 
         flyway.clean();
