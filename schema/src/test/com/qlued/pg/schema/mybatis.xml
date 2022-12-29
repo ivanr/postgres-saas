@@ -12,7 +12,9 @@
     <environments default="none">
 
         <environment id="ddl">
-            <transactionManager type="JDBC"/>
+            <transactionManager type="JDBC">
+                <property name="skipSetAutoCommitOnClose" value="true"/>
+            </transactionManager>
             <dataSource type="POOLED">
                 <property name="driver" value="${db.driver}"/>
                 <property name="url" value="${db.url}"/>
@@ -22,7 +24,9 @@
         </environment>
 
         <environment id="admin">
-            <transactionManager type="JDBC"/>
+            <transactionManager type="JDBC">
+                <property name="skipSetAutoCommitOnClose" value="true"/>
+            </transactionManager>
             <dataSource type="POOLED">
                 <property name="driver" value="${db.driver}"/>
                 <property name="url" value="${db.url}"/>
@@ -32,7 +36,9 @@
         </environment>
 
         <environment id="tenant">
-            <transactionManager type="JDBC"/>
+            <transactionManager type="JDBC">
+                <property name="skipSetAutoCommitOnClose" value="true"/>
+            </transactionManager>
             <dataSource type="POOLED">
                 <property name="driver" value="${db.driver}"/>
                 <property name="url" value="${db.url}"/>

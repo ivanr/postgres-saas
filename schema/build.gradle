@@ -27,10 +27,10 @@ dependencies {
     testImplementation 'org.flywaydb:flyway-core:8.5.9'
 
     // https://mvnrepository.com/artifact/org.mybatis/mybatis
-    testImplementation 'org.mybatis:mybatis:3.5.9'
+    testImplementation 'org.mybatis:mybatis:3.5.11'
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    testImplementation group: 'org.postgresql', name: 'postgresql', version: '42.2.6'
+    testImplementation group: 'org.postgresql', name: 'postgresql', version: '42.5.1'
 
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     testImplementation 'org.slf4j:slf4j-simple:1.7.36'
