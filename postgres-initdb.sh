@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
 
-#echo "Creating 'saas' database"
-#createdb --username "$POSTGRES_USER" $POSTGRES_DB
-
 echo "Creating dblink extension"
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     CREATE SCHEMA dblink;
@@ -34,7 +31,7 @@ EOSQL
 
 echo "ADDING pg_partman_bgw TO postgresql.conf"
 echo "shared_preload_libraries = 'pg_partman_bgw'" >> $PGDATA/postgresql.conf
-echo "pg_partman_bgw.interval = 3600" >> $PGDATA/postgresql.conf
+echo "pg_partman_bgw.interval = 60" >> $PGDATA/postgresql.conf
 echo "pg_partman_bgw.role = '$POSTGRES_USER'" >> $PGDATA/postgresql.conf
 echo "pg_partman_bgw.dbname = '$POSTGRES_DB'" >> $PGDATA/postgresql.conf
 
