@@ -72,11 +72,21 @@ CREATE TABLE audit_log
 
 ) PARTITION BY RANGE (timestamp);
 
-CREATE INDEX ON main.audit_log (timestamp);
+CREATE INDEX ON audit_log (timestamp);
 
 -- Docs https://github.com/pgpartman/pg_partman/blob/master/doc/pg_partman.md#user-content-creation-functions
 SELECT partman.create_parent(p_parent_table => 'main.audit_log',
                              p_control => 'timestamp',
                              p_type => 'native',
-                             p_interval=> 'quarter-hour'
+                             p_interval => 'quarter-hour',
+                             -- Note: Ensure that the background job, configured using 'pg_partman_bgw.interval'
+                             --       in postgresql.conf runs frequently enough to create new partions. In this
+                             --       repo, the background process runs every hour.
+                             p_premake => '6'
            );
+
+UPDATE partman.part_config
+SET infinite_time_partitions = true,
+    retention = '1 hour',
+    retention_keep_table = true
+WHERE parent_table = 'main.audit_log';
