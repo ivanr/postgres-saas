@@ -1,7 +1,7 @@
 CREATE TABLE audit_log
 (
 
-    entry_id        UUID        NOT NULL DEFAULT gen_chrono_uuid() PRIMARY KEY,
+    entry_id        UUID        NOT NULL DEFAULT gen_chrono_uuid(),
 
     -- Optional, but required for entries that take place within tenant accounts.
     tenant_id       UUID REFERENCES tenants (tenant_id) ON DELETE CASCADE,
@@ -70,4 +70,13 @@ CREATE TABLE audit_log
 
     attachment      JSONB
 
-);
+) PARTITION BY RANGE (timestamp);
+
+CREATE INDEX ON main.audit_log (timestamp);
+
+-- Docs https://github.com/pgpartman/pg_partman/blob/master/doc/pg_partman.md#user-content-creation-functions
+SELECT partman.create_parent(p_parent_table => 'main.audit_log',
+                             p_control => 'timestamp',
+                             p_type => 'native',
+                             p_interval=> 'quarter-hour'
+           );

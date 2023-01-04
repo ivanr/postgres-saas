@@ -18,9 +18,17 @@ Monitor Postgres logs:
 
  # docker logs -f pg-database
 
+Connect to the database:
+
+ # psql -h 127.0.0.1 -p 55432 -U postgres saas
+
 
 Flyway
 ======
 
   # ./gradlew :schema:flywayClean
   # ./gradlew :schema:flywayMigrate
+
+Please note that M0__Setup.sql is only used when the containers are
+initially created. If this file is changed, the containers will need
+to be recreated.
