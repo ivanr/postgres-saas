@@ -105,6 +105,9 @@ CREATE TABLE audit_log
 
 CREATE INDEX ON audit_log (timestamp);
 
+
+-- Partitioning.
+
 -- Docs https://github.com/pgpartman/pg_partman/blob/master/doc/pg_partman.md#user-content-creation-functions
 SELECT partman.create_parent(p_parent_table => 'main.audit_log',
                              p_control => 'timestamp',
@@ -121,3 +124,14 @@ SET infinite_time_partitions = true,
     retention                = '1 hour',
     retention_keep_table     = true
 WHERE parent_table = 'main.audit_log';
+
+
+-- Row-level security.
+
+ALTER TABLE audit_log
+    ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY audit_log_policy ON audit_log
+    USING (owner_tenant_id = rls_get_tenant_id()::UUID);
+
+GRANT ALL ON tenant_users TO acme_role_tenant;
