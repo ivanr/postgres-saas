@@ -63,12 +63,13 @@ CREATE TABLE audit_log
     severity        SMALLINT    NOT NULL,
 
 
-    -- Custom data associated with the event.
+    -- Custom data associated with the event; the idea is to use
+    -- this field to track native data in whatever format it is.
 
     attachment_type TEXT CHECK ((attachment_type IS NULL AND attachment IS NULL) OR
                                 (attachment_type IS NOT NULL AND attachment IS NOT NULL)),
 
-    attachment      JSONB
+    attachment      BYTEA
 
 ) PARTITION BY RANGE (timestamp);
 
