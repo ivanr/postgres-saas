@@ -3,55 +3,76 @@ CREATE TABLE audit_log
 
     entry_id        UUID        NOT NULL DEFAULT gen_chrono_uuid(),
 
-    -- Optional, but required for entries that take place within tenant accounts.
-    tenant_id       UUID REFERENCES tenants (tenant_id) ON DELETE CASCADE,
 
-    -- Used to give tenants access to entries. Normally, all tenants have access to
-    -- events related to their accounts. However, they may also get access to other
-    -- events, for example those related to user accounts that are considered to
-    -- belong to them. Row level security operates based on this value.
-    authz_tenant_id UUID        NOT NULL REFERENCES tenants (tenant_id) ON DELETE CASCADE,
+    -- Owner information.
+    --
+    -- Events that take place within tenant accounts are always attached to them. Events that
+    -- take place outside are always attached to individual users. If a tenant owns a user
+    -- account, then these events are also attached to the tenant, giving them visibility
+    -- into the user's activity.
+
+    -- Owning tenant. When a tenant is deleted, all their audit events are deleted.
+    owner_tenant_id UUID        NULL REFERENCES tenants (tenant_id) ON DELETE CASCADE,
+
+    -- Owning user.
+    owner_user_id   UUID        NULL REFERENCES users (user_id) ON DELETE RESTRICT,
+
+    CONSTRAINT has_owner CHECK ((owner_tenant_id IS NOT NULL) OR (owner_user_id IS NOT NULL)),
 
 
-    -- Principal information.
+    -- Actor information.
 
     -- An easy way to determine principal types:
     --   'A' - anonymous
     --   'S' - system
     --   'U' - user
-    principal_type  TEXT        NOT NULL,
+    actor_type      CHAR        NOT NULL,
 
-    -- Optional, but required for activities carried out by users.
-    user_id         UUID REFERENCES users (user_id) ON DELETE RESTRICT,
+    -- The user that caused this event, where applicable.
+    actor_user_id   UUID        NULL REFERENCES users (user_id),
 
-    -- For use when users act on behalf of an organization, for example, member
-    -- of support staff making changes for the tenant.
-    proxy_tenant_id UUID REFERENCES tenants (tenant_id) ON DELETE RESTRICT,
+    -- the actor tenant that caused this event, where applicable. This field
+    -- is used when users act on behalf an organization, and not in their
+    -- individual capacity.
+    actor_tenant_id UUID        NULL REFERENCES tenants (tenant_id),
+
+    CONSTRAINT valid_actor_type CHECK (
+        actor_type IN ('A', 'S', 'U')
+        ),
+
+    CONSTRAINT consistent_actor_type CHECK (
+            ((actor_type = 'U') AND (actor_user_id IS NOT NULL)) OR
+            ((actor_user_id IS NULL) AND (actor_tenant_id IS NULL))
+        ),
 
 
     -- Core event metadata.
 
     timestamp       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    -- Unique transaction/request ID, where applicable. The idea is that
-    -- every activity is initiated somewhere and we want to be able to
-    -- track an activity to its origin.
-    transaction_id  TEXT,
+    -- OpenTelemetry trace identifier.
+    trace_id        TEXT        NULL,
 
     -- Optional, if there is an IP address associated with this entry.
-    remote_addr     INET,
+    remote_addr     INET        NULL,
 
     -- Optional, if there is user session associated with this entry.
-    session_id      TEXT,
+    session_id      TEXT        NULL,
 
     -- Optional, if there is a device associated with this entry.
-    device_id       TEXT,
+    device_id       TEXT        NULL,
+
+    -- Optional, user agent information.
+    user_agent      TEXT        NULL,
 
 
     -- Information about the activity itself.
 
-    -- Unique resource identifier. For HTTP events, contains the URL path, including the query string.
-    resource        TEXT        NOT NULL,
+    -- Resource type.
+    resource_type   TEXT,
+
+    -- Native resource identifier.
+    resource_id     TEXT,
 
     -- For example, 'http.get' or 'user.auth.signed_in'.
     activity        TEXT        NOT NULL,
@@ -60,6 +81,7 @@ CREATE TABLE audit_log
     status          INTEGER     NOT NULL,
 
     -- Syslog severities.
+    -- TODO Enum.
     severity        SMALLINT    NOT NULL,
 
 
