@@ -63,8 +63,16 @@ CREATE TABLE audit_log
     severity        SMALLINT    NOT NULL,
 
 
-    -- Custom data associated with the event; the idea is to use
-    -- this field to track native data in whatever format it is.
+    -- Custom event data. Ideally, each event would have its own schema.
+
+    detail_type     TEXT CHECK ((detail_type IS NULL AND detail IS NULL) OR
+                                (detail_type IS NOT NULL AND detail IS NOT NULL)),
+
+    detail          JSONB,
+
+
+    -- Custom data associated with the event; the idea with attachments
+    -- is to keep track of native data in whatever format it is available.
 
     attachment_type TEXT CHECK ((attachment_type IS NULL AND attachment IS NULL) OR
                                 (attachment_type IS NOT NULL AND attachment IS NOT NULL)),
