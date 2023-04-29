@@ -15,6 +15,7 @@
 - Use separate databases for strong isolation
 - Use appropriate multitenant isolation
 - Use row-level security with a multitenant database
+- Tag data with tenant identities
 
 ## Configuration
 
