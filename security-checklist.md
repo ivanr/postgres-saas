@@ -5,7 +5,7 @@
 - Use parameterised queries at application level
 - Use parameterised queries in stored procedures
 - Airgap external data when writing dynamic SQL
-- Use static analysis to catch insecure practices
+- Monitor for code for correct and incorrect usage
 - Encrypt sensitive and high-value data
 
 ## Privilege Partitioning
