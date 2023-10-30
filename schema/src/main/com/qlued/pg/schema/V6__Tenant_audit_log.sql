@@ -117,7 +117,7 @@ SELECT partman.create_parent(p_parent_table => 'main.audit_log',
            --       in postgresql.conf runs frequently enough to create new partitions. In this
            --       repo, the background process runs every minute.
                              p_premake => '6'
-           );
+       );
 
 UPDATE partman.part_config
 SET infinite_time_partitions = true,
@@ -134,4 +134,4 @@ ALTER TABLE audit_log
 CREATE POLICY audit_log_policy ON audit_log
     USING (owner_tenant_id = rls_get_tenant_id()::UUID);
 
-GRANT ALL ON tenant_users TO acme_role_tenant;
+GRANT SELECT, INSERT, UPDATE, DELETE ON tenant_users TO acme_role_tenant;
