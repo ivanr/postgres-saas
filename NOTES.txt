@@ -103,18 +103,21 @@ table can be queried as any other table.
 
 - SELECT into a new table
 
-- Use garbage collection to delete stale tables; absolute timeout, inactivity timeout?
-
-- Option to explicitly delete the table
-
-- Use a different tablespace, put on a less durable filesystem?
-
-- If using UNLOGGED we get better performance, but no replication
-
 - Is it possible to somehow get the first N results quickly (e.g., to display
   to the user) while we continue to process the entire result? Maybe possible
   via cursors: create a cursor, read the first page, then materialise the
   cursor into a new table?
+
+- Use garbage collection to delete stale tables; absolute timeout. pg_cron? We can
+  probably use the catalog to avoid having separate accounting. Inactivity timeout?
+
+  https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-ALL-TABLES-VIEW
+
+- Option to explicitly delete the table to reclaim the space immediately?
+
+- Use a different tablespace, put on a less durable filesystem?
+
+- If using UNLOGGED we get better performance, but no replication
 
 - Perhaps this solution can be abstracted so that there is a separate
   Postgres server that we query through when we want this sort of thing.
