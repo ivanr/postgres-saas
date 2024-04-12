@@ -1,0 +1,51 @@
+
+Queues and Jobs
+===============
+
+  - created_on
+  - last_success
+  - last_attempt -- includes failures
+  - next_scheduled -- this is when the job is supposed to be run
+  - next_attempt -- this is the next attempt; if the job fails, next_scheduled stays the same
+  - failed_attempts (since the last success)
+  - priority -- integer from 0 to 10, default 5; maybe we want to support more elaborate strategies? For example have a fairness_key?
+  - status -- healthy, failed
+  - status_message
+  - duration statistics: last duration, averages in the last M, N, P periods, total runs, total time
+
+  + Scheduling metadata, for example: fixed rate, fixed delay, interval, cron schedule,
+       how to reschedule after failures, etc
+
+  + How do we know when to schedule a job in relation to other jobs? A job
+    may have some resource requirements and compete with other jobs?
+
+  + We also need to know what the job is. This will sometimes be understood
+    from the context, but if we're building a generic job scheduling feature,
+    we need some more information. For example:
+
+    - type
+    - input -- probably as JSON
+    - input_payload -- for additional data, especially binary; JSON is inefficient for that
+    - input_payload_ct -- (ct => content type)
+
+  + We probably want to support multiple queues, but those should probably be implemented
+    as separate tables using Postgres inheritance.
+
+  + Use partitioning to minimise bloat; can partman should be able to be configured
+    to drop partitions only if they're empty?
+
+  + If not using partitioning, bloat can be fixed by copying the data into a temporary
+    table, running truncate, then copying the data back.
+
+  + Do we want to keep a record of job attempts and invocations? How about job results?
+    Probably in a separate table where we can have custom retention rules.
+
+- Are queues jobs that are immediately due?
+
+- Prior art:
+
+  - https://temporal.io
+
+  - https://github.com/tembo-io/pgmq
+
+  - https://hatchet.run
