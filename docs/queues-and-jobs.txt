@@ -13,6 +13,8 @@ Queues and Jobs
   - status_message
   - status_object JSONB -- for arbitrary status information
   - duration statistics: last duration, averages in the last M, N, P periods, total runs, total time
+  - deadline
+  - fingerprint (for deduplication)
 
   + Scheduling metadata, for example: fixed rate, fixed delay, interval, cron schedule,
        how to reschedule after failures, etc
@@ -47,11 +49,15 @@ Queues and Jobs
 
 - TODO Fair scheduling; look into shuffle sharding: https://aws.amazon.com/builders-library/avoiding-insurmountable-queue-backlogs/
 
+- TODO https://muatik.medium.com/my-notes-on-avoiding-insurmountable-queue-backlogs-a39fa39306fd
+
 - TODO Understand HOT updates https://www.postgresql.org/docs/current/storage-hot.html
 
 - TODO https://dataegret.com/2023/07/automated-index-bloat-management-how-pg_index_watch-keeps-postgresql-indexes-lean/
 
 - TODO https://www.timescale.com/learn/how-to-reduce-bloat-in-large-postgresql-tables
+
+- TODO https://docs.hatchet.run/blog/multi-tenant-queues
 
 - Prior art:
 
