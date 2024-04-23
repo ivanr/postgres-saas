@@ -45,7 +45,7 @@ Queues and Jobs
 
 - TODO Job deduplication
 
-- TODO Fair scheduling; look into shuffle sharding.
+- TODO Fair scheduling; look into shuffle sharding: https://aws.amazon.com/builders-library/avoiding-insurmountable-queue-backlogs/
 
 - TODO Understand HOT updates https://www.postgresql.org/docs/current/storage-hot.html
 
