@@ -59,6 +59,8 @@ Queues and Jobs
 
 - TODO https://docs.hatchet.run/blog/multi-tenant-queues
 
+- TODO https://www.cs.bu.edu/fac/matta/Teaching/cs655-papers/DRR.pdf
+
 - Prior art:
 
   - https://temporal.io
