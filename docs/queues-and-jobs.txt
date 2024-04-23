@@ -49,6 +49,10 @@ Queues and Jobs
 
 - TODO Understand HOT updates https://www.postgresql.org/docs/current/storage-hot.html
 
+- TODO https://dataegret.com/2023/07/automated-index-bloat-management-how-pg_index_watch-keeps-postgresql-indexes-lean/
+
+- TODO https://www.timescale.com/learn/how-to-reduce-bloat-in-large-postgresql-tables
+
 - Prior art:
 
   - https://temporal.io
