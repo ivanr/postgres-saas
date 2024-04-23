@@ -11,6 +11,7 @@ Queues and Jobs
   - priority -- integer from 0 to 10, default 5; maybe we want to support more elaborate strategies? For example have a fairness_key?
   - status -- healthy, failed
   - status_message
+  - status_object JSONB -- for arbitrary status information
   - duration statistics: last duration, averages in the last M, N, P periods, total runs, total time
 
   + Scheduling metadata, for example: fixed rate, fixed delay, interval, cron schedule,
@@ -42,6 +43,12 @@ Queues and Jobs
 
 - Are queues jobs that are immediately due?
 
+- TODO Job deduplication
+
+- TODO Fair scheduling; look into shuffle sharding.
+
+- TODO Understand HOT updates https://www.postgresql.org/docs/current/storage-hot.html
+
 - Prior art:
 
   - https://temporal.io
@@ -49,3 +56,50 @@ Queues and Jobs
   - https://github.com/tembo-io/pgmq
 
   - https://hatchet.run
+
+
+Thoughts
+--------
+
+A Postgres queue needs to deal with three problems:
+
+- Pulling jobs without conflict
+
+  1. Use one puller per queue; in this case conflict is avoided with the design. Pullers
+     can carry out the work themselves or delegate it to workers.
+
+  2. Pullers take one job at a time, using SELECT ... FOR UPDATE, SKIP LOCKED. Requires
+     one database connection per puller, which may or may not be prohibitive. This
+     approach is natively HA if the workers are spread across many computers.
+
+  3. Rows are retrieved for UPDATE, SKIP LOCKED, then updated with in-progress status
+     and a timestamp. Rows that timeout can be selected by other pullers. Long jobs
+     will need to refresh the timestamp.
+
+     Bonus with this approach: we know which jobs are in progress and how long. The
+     table could be extended to carry status information.
+
+- Failures
+
+  It's likely that some jobs will fail, what do we do then?
+
+    - We can ignore this problem and let the applications deal with it; for example,
+      they could move the jobs into a dead letter table.
+
+    - If we want to retry later, we can keep a try-next timestamp and index based on that.
+
+    - If we partition based on that timestamp, Postgres will move jobs across partitions
+      as necessary.
+
+    - We could have a separate dead-letter queue for permanent failures. So perhaps
+      partitioning at two levels: first based on status (active and dead), then based
+      on try-next timestamp (active only).
+
+- Bloat
+
+  Bloat happens on tables with frequent updates. We want to avoid it. If we use partitions,
+  we can avoid deletions and can drop entire partitions at a time. Even if we delete, when
+  we drop partitions we avoid bloat as well.
+
+  Partitions also give us efficient archival if we don't delete jobs, we can keep the
+  record of their running for a period of time.
