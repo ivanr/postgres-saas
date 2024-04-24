@@ -47,28 +47,6 @@ Queues and Jobs
 
 - TODO Job deduplication
 
-- TODO Fair scheduling; look into shuffle sharding: https://aws.amazon.com/builders-library/avoiding-insurmountable-queue-backlogs/
-
-- TODO https://muatik.medium.com/my-notes-on-avoiding-insurmountable-queue-backlogs-a39fa39306fd
-
-- TODO Understand HOT updates https://www.postgresql.org/docs/current/storage-hot.html
-
-- TODO https://dataegret.com/2023/07/automated-index-bloat-management-how-pg_index_watch-keeps-postgresql-indexes-lean/
-
-- TODO https://www.timescale.com/learn/how-to-reduce-bloat-in-large-postgresql-tables
-
-- TODO https://docs.hatchet.run/blog/multi-tenant-queues
-
-- TODO https://www.cs.bu.edu/fac/matta/Teaching/cs655-papers/DRR.pdf
-
-- Prior art:
-
-  - https://temporal.io
-
-  - https://github.com/tembo-io/pgmq
-
-  - https://hatchet.run
-
 
 Thoughts
 --------
@@ -80,13 +58,18 @@ A Postgres queue needs to deal with three problems:
   1. Use one puller per queue; in this case conflict is avoided with the design. Pullers
      can carry out the work themselves or delegate it to workers.
 
+     - It's also possible to shard the jobs, then use multiple pullers, one per
+       shard. Each puller can obtain a lease on a shard. If the lease is not
+       renewed, another puller can take over.
+
   2. Pullers take one job at a time, using SELECT ... FOR UPDATE, SKIP LOCKED. Requires
      one database connection per puller, which may or may not be prohibitive. This
      approach is natively HA if the workers are spread across many computers.
 
   3. Rows are retrieved for UPDATE, SKIP LOCKED, then updated with in-progress status
      and a timestamp. Rows that timeout can be selected by other pullers. Long jobs
-     will need to refresh the timestamp.
+     will need to refresh the timestamp. Jobs in progress are updated with a random
+     token, only workers who have the token can update. Or the lease expires.
 
      Bonus with this approach: we know which jobs are in progress and how long. The
      table could be extended to carry status information.
@@ -115,3 +98,27 @@ A Postgres queue needs to deal with three problems:
 
   Partitions also give us efficient archival if we don't delete jobs, we can keep the
   record of their running for a period of time.
+
+- References
+
+  - https://www.foundationdb.org/files/QuiCK.pdf
+
+  - https://temporal.io
+
+  - https://github.com/tembo-io/pgmq
+
+  - https://hatchet.run
+
+  - https://aws.amazon.com/builders-library/avoiding-insurmountable-queue-backlogs/
+
+  - https://muatik.medium.com/my-notes-on-avoiding-insurmountable-queue-backlogs-a39fa39306fd
+
+  - https://www.postgresql.org/docs/current/storage-hot.html
+
+  - https://dataegret.com/2023/07/automated-index-bloat-management-how-pg_index_watch-keeps-postgresql-indexes-lean/
+
+  - https://www.timescale.com/learn/how-to-reduce-bloat-in-large-postgresql-tables
+
+  - https://docs.hatchet.run/blog/multi-tenant-queues
+
+  - https://www.cs.bu.edu/fac/matta/Teaching/cs655-papers/DRR.pdf
