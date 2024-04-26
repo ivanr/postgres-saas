@@ -2,6 +2,8 @@
 Queues and Jobs
 ===============
 
+  - job_id
+  - scheduled_job_id -- if reusing the same row for scheduling and actual jobs
   - created_on
   - last_success
   - last_attempt -- includes failures
