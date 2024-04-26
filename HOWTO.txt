@@ -20,7 +20,7 @@ Monitor Postgres logs:
 
 Connect to the database:
 
- # psql14 -h 127.0.0.1 -p 55432 -U postgres saas
+ # psql -h 127.0.0.1 -p 55432 -U postgres saas
 
 
 Flyway

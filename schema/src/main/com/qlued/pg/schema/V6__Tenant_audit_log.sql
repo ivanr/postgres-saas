@@ -105,6 +105,7 @@ CREATE TABLE audit_log
 
 CREATE INDEX ON audit_log (timestamp);
 
+/*
 
 -- Partitioning.
 
@@ -125,6 +126,7 @@ SET infinite_time_partitions = true,
     retention_keep_table     = true
 WHERE parent_table = 'main.audit_log';
 
+*/
 
 -- Row-level security.
 
