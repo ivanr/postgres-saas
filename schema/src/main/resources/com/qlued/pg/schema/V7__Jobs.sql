@@ -14,7 +14,7 @@ CREATE TABLE tenant_jobs
 
     status     JOB_STATUS  NOT NULL DEFAULT 'active',
 
-    PRIMARY KEY (tenant_id, job_id, status)
+    PRIMARY KEY (tenant_id, job_id, status, run_at)
 
 ) PARTITION BY LIST (status);
 
@@ -36,7 +36,11 @@ GRANT ALL
 
 -- Partitions.
 
-CREATE TABLE tenant_jobs_undead PARTITION OF tenant_jobs FOR VALUES IN ('active', 'completed');
+-- TODO If we're partitioning on run_at, we should add a CHECK that the value is
+--      in the future. We won't necessarily have partitions in the past. We'll also
+--      need to create sufficient future partitions depending on how far in the
+--      future run_at can be.
+CREATE TABLE tenant_jobs_undead PARTITION OF tenant_jobs FOR VALUES IN ('active', 'completed') PARTITION BY RANGE (run_at);
 
 CREATE TABLE tenant_jobs_dead PARTITION OF tenant_jobs FOR VALUES IN ('dead');
 
