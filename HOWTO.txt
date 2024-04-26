@@ -32,3 +32,10 @@ Flyway
 Please note that M0__Setup.sql is only used when the containers are
 initially created. If this file is changed, the containers will need
 to be recreated.
+
+
+MacPorts
+========
+
+# sudo port select --list postgresql
+# sudo port select --set  postgresql postgresql16
