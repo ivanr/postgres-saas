@@ -17,28 +17,38 @@ repositories {
 }
 
 dependencies {
+
+    // Main dependencies.
+
+    // https://mvnrepository.com/artifact/org.flywaydb/flyway-database-postgresql
+    implementation 'org.flywaydb:flyway-database-postgresql:10.11.1'
+
+    // https://mvnrepository.com/artifact/org.postgresql/postgresql
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.3'
+
+
     // Tests dependencies.
 
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
 
-    // https://mvnrepository.com/artifact/org.flywaydb/flyway-core/4.2.0
-    testImplementation 'org.flywaydb:flyway-core:9.8.1'
+    // https://mvnrepository.com/artifact/org.flywaydb/flyway-database-postgresql
+    implementation 'org.flywaydb:flyway-database-postgresql:10.11.1'
 
     // https://mvnrepository.com/artifact/org.mybatis/mybatis
-    testImplementation 'org.mybatis:mybatis:3.5.11'
+    testImplementation 'org.mybatis:mybatis:3.5.16'
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    testImplementation group: 'org.postgresql', name: 'postgresql', version: '42.5.1'
+    testImplementation group: 'org.postgresql', name: 'postgresql', version: '42.7.3'
 
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
-    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
+    testImplementation 'org.slf4j:slf4j-simple:2.0.13'
 
     // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
-    testImplementation 'org.testcontainers:testcontainers:1.17.6'
-    testImplementation "org.testcontainers:junit-jupiter:1.17.6"
-    testImplementation "org.testcontainers:postgresql:1.17.6"
+    testImplementation 'org.testcontainers:testcontainers:1.19.7'
+    testImplementation "org.testcontainers:junit-jupiter:1.19.7"
+    testImplementation "org.testcontainers:postgresql:1.19.7"
 }
 
 sourceSets {
