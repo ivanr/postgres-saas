@@ -1,35 +1,50 @@
 /*
 
-A simple jobs table that uses partitioning to reduce contention and
+A simple table for jobs that uses partitioning to reduce contention and
 bloat. There is partitioning at three levels: job type, status, and time.
 
-At the first level, the idea is to have one jobs table, but different
-partitions for different job types, or queues. In this example, one
-partition is used for two queues, and there is a separate partition
-for the third queue. With multiple queues it's possible to use
+At the first level, the idea is to have all jobs in seemingly one table,
+but use different partitions underneath for different queues. We assign
+types to jobs and use partitions to decide which types go into which queue.
+In this example, we use one queue for two types, and a separate queue
+for the third type. With multiple queues it's possible to use
 multiple job pullers without locking. And even if locking is used,
 there will be less contention on a per queue basis.
 
-If multiple pullers per queue are needed, the table could be further
-sharded. A system of leases can be devised to let pullers compete
-and that all shards are handled in the event of puller failure.
+The nature of the job types will determine how many queues to have and
+how to group job types. For example: if you expect to have a lot of a
+particular job type, you don't want its processing to impact other
+job types. In that case, you may want to put it into a separate queue.
+
+Another example, some job types may take much longer, or you may otherwise
+want to control execution concurrency. Same thing, put them into a
+separate queue.
 
 In Postgres 17, merging and splitting of partitions will be supported,
 which will make it easier to use queues. You could start with one
 default queue and split as needed.
 
-We want to use the next level of partitioning to reduce bloat, with
-daily (for example) partitions that can be quickly dropped. However,
-we still use further two partitioning levels in order to support
-a dead letter queue, the idea being that we sometimes may want to
-keep dead jobs for longer. Thus the latter two partition layers
+If multiple pullers per queue are needed, the table could be further
+sharded using hash partitioning. A system of leases can be devised to
+have pullers compete and that all shards are handled in the event of
+puller failure.
+
+This design assumes queues are kept in memory, which provides a lot
+of flexibility over scheduling of individual jobs. In fairness in
+multi-tenant environments is required, consider using shuffle sharding.
+
+At the second level, we use partitioning to reduce bloat, with (for
+example) daily partitions that can be quickly dropped rather than
+vacuumed. However, we still use further two partitioning levels in order
+to support a dead letter queue, the idea being that we sometimes may want
+to keep dead jobs for longer. Thus the latter two partition layers
 are per job status, then run_at timestamp.
 
  */
 
 CREATE TYPE job_status AS ENUM ('active', 'completed', 'dead');
 
-CREATE TYPE job_type AS ENUM ('queue1', 'queue2', 'queue3');
+CREATE TYPE job_type AS ENUM ('type1', 'type2', 'type3');
 
 CREATE TABLE tenant_jobs
 (
@@ -74,17 +89,17 @@ GRANT ALL
 --      need to create sufficient future partitions depending on how far in the
 --      future run_at can be.
 
-CREATE TABLE tenant_jobs_default PARTITION OF tenant_jobs FOR VALUES IN ('queue1','queue2') PARTITION BY LIST (status);
+CREATE TABLE tenant_jobs_default PARTITION OF tenant_jobs FOR VALUES IN ('type1','type2') PARTITION BY LIST (status);
 
-CREATE TABLE tenant_jobs_queue3 PARTITION OF tenant_jobs FOR VALUES IN ('queue3') PARTITION BY LIST (status);
+CREATE TABLE tenant_jobs_queue2 PARTITION OF tenant_jobs FOR VALUES IN ('type3') PARTITION BY LIST (status);
 
 CREATE TABLE tenant_jobs_default_undead PARTITION OF tenant_jobs_default FOR VALUES IN ('active', 'completed') PARTITION BY RANGE (run_at);
 
 CREATE TABLE tenant_jobs_default_dead PARTITION OF tenant_jobs_default FOR VALUES IN ('dead');
 
-CREATE TABLE tenant_jobs_queue3_undead PARTITION OF tenant_jobs_queue3 FOR VALUES IN ('active', 'completed') PARTITION BY RANGE (run_at);
+CREATE TABLE tenant_jobs_queue2_undead PARTITION OF tenant_jobs_queue2 FOR VALUES IN ('active', 'completed') PARTITION BY RANGE (run_at);
 
-CREATE TABLE tenant_jobs_queue3_dead PARTITION OF tenant_jobs_queue3 FOR VALUES IN ('dead');
+CREATE TABLE tenant_jobs_queue2_dead PARTITION OF tenant_jobs_queue2 FOR VALUES IN ('dead');
 
 -- TODO Do we need to configure row-level security on the partitions?
 
