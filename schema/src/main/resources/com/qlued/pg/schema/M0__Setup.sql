@@ -19,6 +19,15 @@ BEGIN
 END
 $$;
 
+CREATE OR REPLACE PROCEDURE grant_permissions_to_partman(schema text)
+    LANGUAGE plpgsql AS
+$$
+BEGIN
+    EXECUTE format('GRANT ALL ON SCHEMA %I TO partman_user;', schema);
+    EXECUTE format('GRANT TEMPORARY ON DATABASE %I to partman_user;', current_database());
+END
+$$;
+
 
 -- We start by creating a new role that will serve as the database
 -- owner. Basically, the idea is to avoid using superuser accounts
@@ -124,3 +133,12 @@ ALTER ROLE acme_user_app_tenant SET search_path TO main;
 CALL grant_connect_to_current_database('acme_user_app_tenant');
 GRANT USAGE ON SCHEMA main TO acme_user_app_tenant;
 GRANT acme_role_tenant TO acme_user_app_tenant;
+
+
+-- Partman
+
+CALL grant_permissions_to_partman('main');
+
+-- This was the only way I could get acme_role_owner to call partman.
+GRANT ALL ON SCHEMA partman TO acme_role_owner;
+GRANT ALL ON ALL TABLES IN SCHEMA partman TO acme_role_owner;

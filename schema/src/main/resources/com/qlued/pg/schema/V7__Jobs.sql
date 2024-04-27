@@ -40,8 +40,19 @@ GRANT ALL
 --      in the future. We won't necessarily have partitions in the past. We'll also
 --      need to create sufficient future partitions depending on how far in the
 --      future run_at can be.
+
 CREATE TABLE tenant_jobs_undead PARTITION OF tenant_jobs FOR VALUES IN ('active', 'completed') PARTITION BY RANGE (run_at);
 
 CREATE TABLE tenant_jobs_dead PARTITION OF tenant_jobs FOR VALUES IN ('dead');
 
 -- TODO Do we need to configure row-level security on the partitions?
+
+/*
+-- Use partman to create future permissions. This assumes we'll
+-- create jobs that run only up to 30 days in the future.
+SELECT partman.create_parent(p_parent_table => 'main.tenant_jobs_undead',
+                             p_control => 'run_at',
+                             p_interval => '1 day',
+                             p_premake => '33'
+       );
+*/

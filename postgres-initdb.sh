@@ -1,32 +1,16 @@
 #!/bin/bash
 set -e
 
-echo "Creating dblink extension"
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-    CREATE SCHEMA dblink;
-    CREATE EXTENSION dblink SCHEMA dblink;
-EOSQL
-
-echo "Creating jobmon extension"
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-    CREATE SCHEMA jobmon;
-    CREATE EXTENSION pg_jobmon SCHEMA jobmon;
-    INSERT INTO jobmon.dblink_mapping_jobmon (username, pwd) VALUES ('$POSTGRES_USER', '$POSTGRES_PASSWORD');
-EOSQL
-
 echo "Creating partman extension"
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     CREATE SCHEMA partman;
     CREATE EXTENSION pg_partman SCHEMA partman;
-EOSQL
 
-echo "Adding jobmon permissions"
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-    GRANT USAGE ON SCHEMA jobmon TO $POSTGRES_USER;
-    GRANT USAGE ON SCHEMA dblink TO $POSTGRES_USER;
-    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA jobmon TO $POSTGRES_USER;
-    GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA jobmon TO $POSTGRES_USER;
-    GRANT ALL ON ALL SEQUENCES IN SCHEMA jobmon TO $POSTGRES_USER;
+    CREATE ROLE partman_user WITH LOGIN;
+    GRANT ALL ON SCHEMA partman TO partman_user;
+    GRANT ALL ON ALL TABLES IN SCHEMA partman TO partman_user;
+    GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA partman TO partman_user;
+    GRANT EXECUTE ON ALL PROCEDURES IN SCHEMA partman TO partman_user;
 EOSQL
 
 echo "ADDING pg_partman_bgw TO postgresql.conf"

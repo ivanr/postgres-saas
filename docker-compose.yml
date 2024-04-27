@@ -16,7 +16,5 @@ services:
       - "127.0.0.1:55432:5432"
     volumes:
       - ./postgres-initdb.sh:/docker-entrypoint-initdb.d/initdb.sh:ro,delegated
-      - ./schema/src/main/com/qlued/pg/schema/M0__Setup.sql:/docker-entrypoint-initdb.d/setup.sql:ro,delegated
+      - ./schema/src/main/resources/com/qlued/pg/schema/M0__Setup.sql:/docker-entrypoint-initdb.d/setup.sql:ro,delegated
       - postgres-data:/var/lib/postgresql/data:delegated
-    #command: >
-    #  sh -c "add-apt-repository universe && apt-get install postgresql-14-partman"
