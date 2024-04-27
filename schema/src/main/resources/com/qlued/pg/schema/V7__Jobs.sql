@@ -1,3 +1,14 @@
+-- A simple jobs table that uses partitioning to reduce bloat. There
+-- is partitioning at two levels: first based on status, where we have
+-- one partition for active and completed jobs, and another for dead
+-- jobs. The former is partitioned further into daily partitions. The
+-- dead letter table is not partitioned based on time.
+--
+-- The idea is that we may want to drop the table with good jobs on
+-- a daily basis or something similar, but we may want to keep the
+-- dead jobs for potentially longer. We don't want dead jobs to
+-- be preventing us from deleting the bulk of the data.
+
 CREATE TYPE job_status AS ENUM ('active', 'completed', 'dead');
 
 CREATE TABLE tenant_jobs
@@ -48,7 +59,7 @@ CREATE TABLE tenant_jobs_dead PARTITION OF tenant_jobs FOR VALUES IN ('dead');
 -- TODO Do we need to configure row-level security on the partitions?
 
 /*
--- Use partman to create future permissions. This assumes we'll
+-- Use partman to create future partitions. This assumes we'll
 -- create jobs that run only up to 30 days in the future.
 SELECT partman.create_parent(p_parent_table => 'main.tenant_jobs_undead',
                              p_control => 'run_at',
