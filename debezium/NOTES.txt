@@ -1,0 +1,4 @@
+Logical Replication From Postgres 16 Stand-By Servers—Debezium and Failover Slots
+
+- https://www.decodable.co/blog/logical-replication-from-postgres-16-stand-by-servers-part-1-of-2
+- https://www.decodable.co/blog/logical-replication-from-postgres-16-stand-by-servers-part-2-of-2
