@@ -12,6 +12,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -22,8 +24,14 @@ public abstract class AbstractContainerTest {
     private static Logger logger = LoggerFactory.getLogger(AbstractContainerTest.class);
 
     @Container
-    private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest").
-            withCommand("postgres -c log_statement=all");
+    private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
+
+            DockerImageName.parse("postgres-saas-postgres")
+                    .asCompatibleSubstituteFor("postgres"))
+            .withCopyFileToContainer(
+                    MountableFile.forHostPath(System.getProperty("user.dir") + "/../postgres-initdb.sh"),
+                    "/docker-entrypoint-initdb.d/initdb.sh")
+            .withCommand("postgres -c log_statement=all");
 
     protected static SqlSessionFactory adminSessionFactory;
 
@@ -37,7 +45,7 @@ public abstract class AbstractContainerTest {
         // Initialize the database. We have to run this as
         // a separate step because we don't want to use the
         // public schema.
-        
+
         Flyway flywayInit = Flyway.configure()
                 .dataSource(
                         postgres.getJdbcUrl(),

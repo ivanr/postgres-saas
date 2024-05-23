@@ -16,4 +16,8 @@ public interface TestMapper {
 
     @Insert("INSERT INTO tenant_notes (tenant_id, note) VALUES (#{tenantId}::UUID, #{note})")
     void insertNote(TenantNote tenantNote);
+
+    @Update("SELECT pg_advisory_xact_lock(#{key})")
+    void probabalisticLock(String key);
+
 }
