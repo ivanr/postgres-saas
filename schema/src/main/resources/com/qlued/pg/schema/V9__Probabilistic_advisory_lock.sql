@@ -24,10 +24,8 @@ $$
 DECLARE
     r BOOLEAN;
 BEGIN
-    r := (SELECT pg_try_advisory_xact_lock(
-                         concat('x' || lpad(encode(digest($1, 'sha256'), 'hex'), 16, '0'))::bit(64)::BIGINT
-                 ) AS b);
-    -- RAISE EXCEPTION 'Return: %', r;
-    RETURN r;
+    RETURN (SELECT pg_try_advisory_xact_lock(
+                           concat('x' || lpad(encode(digest($1, 'sha256'), 'hex'), 16, '0'))::bit(64)::BIGINT
+                   ) AS b);
 END
 $$ LANGUAGE plpgsql;
