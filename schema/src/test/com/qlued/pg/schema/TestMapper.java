@@ -4,6 +4,7 @@ import com.qlued.pg.model.Tenant;
 import com.qlued.pg.model.TenantNote;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 public interface TestMapper {
@@ -17,7 +18,9 @@ public interface TestMapper {
     @Insert("INSERT INTO tenant_notes (tenant_id, note) VALUES (#{tenantId}::UUID, #{note})")
     void insertNote(TenantNote tenantNote);
 
-    @Update("SELECT pg_advisory_xact_lock(#{key})")
-    void probabalisticLock(String key);
+    @Update("CALL pg_advisory_xact_lock(#{key})")
+    void probabilisticLock(String key);
 
+    @Select(value = "SELECT pg_try_advisory_xact_lock(#{key})", affectData = true)
+    boolean tryProbabilisticLock(String key);
 }
