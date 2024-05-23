@@ -4,7 +4,7 @@ In Postgres, advisory lock functions take either two int4 values, or one int8 va
 a result, these functions are somewhat difficult to use. The functions below provide
 a more ergonomic approach where arbitrary text is converted into a Postgres lock via
 hashing. There are 2^64 possible combinations, so the likelihood of conflict is not
-ideal, but still low.
+great, but it's still low.
 
 */
 
