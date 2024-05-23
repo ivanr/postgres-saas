@@ -1,5 +1,6 @@
 package com.qlued.pg.schema;
 
+import com.qlued.pg.util.DelimitedIdentifier;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,8 @@ public class TestProbabilisticLock extends AbstractContainerTest {
             TestMapper mapper = session.getMapper(TestMapper.class);
             Assert.assertTrue(mapper.tryProbabilisticLock(LOCK_1));
         }
+
+        String.join(":", "user", Long.toString(1234L));
     }
 
     @Test
@@ -61,5 +64,17 @@ public class TestProbabilisticLock extends AbstractContainerTest {
             // that will release the lock as well.
             session.commit();
         }
+    }
+
+    @Test
+    public void testDelimitedIdentifier() {
+        Assert.assertEquals("user:12345", DelimitedIdentifier.builder()
+                .fragment("user")
+                .fragment(12345)
+                .build().toString());
+
+        Assert.assertEquals(
+                "user:12345",
+                DelimitedIdentifier.of("user", 12345));
     }
 }
