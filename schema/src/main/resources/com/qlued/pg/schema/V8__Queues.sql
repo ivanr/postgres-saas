@@ -4,11 +4,13 @@ Here we have an example of shuffle sharding, which provides a level of
 resiliency against noisy neighbours in multi-tenant systems. The idea
 is to:
 
- 1. Divide the queue into N shards (8 in this example).
+ 1. Create N virtual shards (e.g., 65,536).
 
- 2. Assign each tenant to M shards (2 in this example).
+ 2. Divide the queue into M actual shards (8 in this example).
 
- 3. When adding to the queue, insert each entry into the least
+ 3. Assign each tenant to 2 virtual shards.
+
+ 4. When adding to the queue, insert each entry into the least
     busy shard assigned to the tenant.
 
 With this approach, a large volume of entries from one tenant will
@@ -16,6 +18,13 @@ saturate two shards, but the remaining 6 shards will continue to
 serve the other 7 tenants.
 
 Increasing the number of shards increases the resiliency.
+
+The use of virtual shards decouples tenant assignments to that
+they don't have to be changed should you wish to change the
+number of underlying actual shards (e.g., to support growth).
+
+For estimation of queue sizes, use TABLESAMPLE with the SYSTEM method:
+https://www.postgresql.org/docs/current/sql-select.html#:~:text=a%20tablesample%20clause
 
  */
 
