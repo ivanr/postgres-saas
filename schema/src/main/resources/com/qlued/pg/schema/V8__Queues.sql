@@ -26,6 +26,15 @@ number of underlying actual shards (e.g., to support growth).
 For estimation of queue sizes, use TABLESAMPLE with the SYSTEM method:
 https://www.postgresql.org/docs/current/sql-select.html#:~:text=a%20tablesample%20clause
 
+Another advantage of partitioning is that it's possible to use
+multiple pullers, one per partition, to avoid locking. If it's not
+necessary to process rows in a particular orders, indexes are
+not necessary either.
+
+To manage bloat [without further time-based/2nd-level partitioning],
+each puller can periodically stop processing rows to recreate the
+partitions while preserving the rows that haven't been processed yet.
+
  */
 
 CREATE TABLE tenant_queue

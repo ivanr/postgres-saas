@@ -104,6 +104,7 @@ CREATE TABLE tenant_jobs_queue2_dead PARTITION OF tenant_jobs_queue2 FOR VALUES 
 -- TODO Do we need to configure row-level security on the partitions?
 
 /*
+
 -- Use partman to create future partitions. This assumes we'll
 -- create jobs that run only up to 30 days in the future.
 
