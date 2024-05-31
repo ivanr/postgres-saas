@@ -35,6 +35,8 @@ To manage bloat [without further time-based/2nd-level partitioning],
 each puller can periodically stop processing rows to recreate the
 partitions while preserving the rows that haven't been processed yet.
 
+To monitor bloat: https://www.postgresql.org/docs/current/pgstattuple.html
+
  */
 
 CREATE TABLE tenant_queue
