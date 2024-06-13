@@ -2,6 +2,11 @@
 Docker
 ======
 
+Start container in foreground for the first
+time to observe there will be no errors:
+
+  # docker-compose up
+
 Start containers:
 
   # docker-compose up -d
@@ -13,6 +18,10 @@ Stop containers:
 Remove docker and volumes:
 
  # docker-compose down -v
+
+Delete all images
+
+ # docker rmi -f $(docker images -aq)
 
 Monitor Postgres logs:
 

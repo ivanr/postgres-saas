@@ -27,8 +27,6 @@ vacuumed.
 
  */
 
-CREATE EXTENSION IF NOT EXISTS pg_partman;
-
 CREATE TYPE job_status AS ENUM ('active', 'completed', 'failed');
 
 CREATE TYPE job_type AS ENUM ('type1', 'type2');
@@ -52,6 +50,8 @@ CREATE TABLE tenant_jobs
     PRIMARY KEY (tenant_id, job_id, type, status, run_at)
 
 ) PARTITION BY LIST (type);
+
+CREATE INDEX tenant_jobs_status_run_at ON tenant_jobs (status, run_at);
 
 ALTER TABLE tenant_jobs
     ENABLE ROW LEVEL SECURITY;
@@ -79,12 +79,12 @@ CREATE TABLE tenant_jobs_type2 PARTITION OF tenant_jobs FOR VALUES IN ('type2') 
 
 SELECT partman.create_parent(p_parent_table => 'main.tenant_jobs_type1',
                              p_control => 'run_at',
-                             p_interval => '7 day',
-                             p_premake => '7'
+                             p_interval => '15 minute',
+                             p_premake => '2'
        );
 
 SELECT partman.create_parent(p_parent_table => 'main.tenant_jobs_type2',
                              p_control => 'run_at',
-                             p_interval => '7 day',
-                             p_premake => '7'
+                             p_interval => '15 minute',
+                             p_premake => '2'
        );
