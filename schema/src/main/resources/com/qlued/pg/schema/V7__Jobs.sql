@@ -1,16 +1,13 @@
 /*
 
 A simple table for jobs that uses partitioning to reduce contention and
-bloat. There is partitioning at three levels: job type, status, and time.
+bloat. There is partitioning at two levels: job type and then time.
 
 At the first level, the idea is to have all jobs in seemingly one table,
 but use different partitions underneath for different queues. We assign
 types to jobs and use partitions to decide which types go into which queue.
-In this example, we use one queue for two types, and a separate queue
-for the third type. With multiple queues it's possible to use
-multiple job pullers without locking. And even if locking is used,
-there will be less contention on a per queue basis.
 
+It's possible to put multiple job types into a single queue if desired.
 The nature of the job types will determine how many queues to have and
 how to group job types. For example: if you expect to have a lot of a
 particular job type, you don't want its processing to impact other
@@ -24,27 +21,17 @@ In Postgres 17, merging and splitting of partitions will be supported,
 which will make it easier to use queues. You could start with one
 default queue and split as needed.
 
-If multiple pullers per queue are needed, the table could be further
-sharded using hash partitioning. A system of leases can be devised to
-have pullers compete and that all shards are handled in the event of
-puller failure.
-
-This design assumes queues are kept in memory, which provides a lot
-of flexibility over scheduling of individual jobs. In fairness in
-multi-tenant environments is required, consider using shuffle sharding.
-
-At the second level, we use partitioning to reduce bloat, with (for
+At the second level, we use time-based partitioning to reduce bloat, with (for
 example) daily partitions that can be quickly dropped rather than
-vacuumed. However, we still use further two partitioning levels in order
-to support a dead letter queue, the idea being that we sometimes may want
-to keep dead jobs for longer. Thus the latter two partition layers
-are per job status, then run_at timestamp.
+vacuumed.
 
  */
 
-CREATE TYPE job_status AS ENUM ('active', 'completed', 'dead');
+CREATE EXTENSION IF NOT EXISTS pg_partman;
 
-CREATE TYPE job_type AS ENUM ('type1', 'type2', 'type3');
+CREATE TYPE job_status AS ENUM ('active', 'completed', 'failed');
+
+CREATE TYPE job_type AS ENUM ('type1', 'type2');
 
 CREATE TABLE tenant_jobs
 (
@@ -66,11 +53,6 @@ CREATE TABLE tenant_jobs
 
 ) PARTITION BY LIST (type);
 
--- This index is designed to support finding new jobs added since
--- a timestamp. The idea is that, at startup, one puller will load
--- all jobs, then periodically poll for new jobs.
-CREATE INDEX ON tenant_jobs (created_at) WHERE status = 'active';
-
 ALTER TABLE tenant_jobs
     ENABLE ROW LEVEL SECURITY;
 
@@ -84,40 +66,25 @@ GRANT ALL
 
 -- Partitions.
 
--- TODO If we're partitioning on run_at, we should add a CHECK that the value is
---      in the future. We won't necessarily have partitions in the past. We'll also
---      need to create sufficient future partitions depending on how far in the
---      future run_at can be.
+CREATE TABLE tenant_jobs_type1 PARTITION OF tenant_jobs FOR VALUES IN ('type1') PARTITION BY RANGE (run_at);
 
-CREATE TABLE tenant_jobs_default PARTITION OF tenant_jobs FOR VALUES IN ('type1','type2') PARTITION BY LIST (status);
-
-CREATE TABLE tenant_jobs_queue2 PARTITION OF tenant_jobs FOR VALUES IN ('type3') PARTITION BY LIST (status);
-
-CREATE TABLE tenant_jobs_default_undead PARTITION OF tenant_jobs_default FOR VALUES IN ('active', 'completed') PARTITION BY RANGE (run_at);
-
-CREATE TABLE tenant_jobs_default_dead PARTITION OF tenant_jobs_default FOR VALUES IN ('dead');
-
-CREATE TABLE tenant_jobs_queue2_undead PARTITION OF tenant_jobs_queue2 FOR VALUES IN ('active', 'completed') PARTITION BY RANGE (run_at);
-
-CREATE TABLE tenant_jobs_queue2_dead PARTITION OF tenant_jobs_queue2 FOR VALUES IN ('dead');
+CREATE TABLE tenant_jobs_type2 PARTITION OF tenant_jobs FOR VALUES IN ('type2') PARTITION BY RANGE (run_at);
 
 -- TODO Do we need to configure row-level security on the partitions?
 
-/*
 
--- Use partman to create future partitions. This assumes we'll
--- create jobs that run only up to 30 days in the future.
+-- Use partman to create future partitions. The limitation of using partman
+-- is that we can't schedule job at arbitrary times in the future. If we
+-- were to create partitions on demand, we could.
 
-SELECT partman.create_parent(p_parent_table => 'main.tenant_jobs_default_undead',
+SELECT partman.create_parent(p_parent_table => 'main.tenant_jobs_type1',
                              p_control => 'run_at',
-                             p_interval => '1 day',
-                             p_premake => '33'
+                             p_interval => '7 day',
+                             p_premake => '7'
        );
 
-SELECT partman.create_parent(p_parent_table => 'main.tenant_jobs_queue3_undead',
+SELECT partman.create_parent(p_parent_table => 'main.tenant_jobs_type2',
                              p_control => 'run_at',
-                             p_interval => '1 day',
-                             p_premake => '33'
+                             p_interval => '7 day',
+                             p_premake => '7'
        );
-
-*/

@@ -33,6 +33,9 @@ Please note that M0__Setup.sql is only used when the containers are
 initially created. If this file is changed, the containers will need
 to be recreated.
 
+Also, invoking clean won't reset the partman configuration. A better
+way to clean is to remove the docker values, then start them back again.
+
 
 MacPorts
 ========
