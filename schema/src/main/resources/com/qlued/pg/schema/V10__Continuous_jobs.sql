@@ -46,3 +46,13 @@ CREATE INDEX tenant_work_schedule_next_run ON tenant_work (schedule_next_run);
 -- been modified since the last fetch. Can be useful
 -- for schedules that load all jobs in memory.
 CREATE INDEX tenant_work_schedule_last_modified ON tenant_work (schedule_last_modified);
+
+ALTER TABLE tenant_work
+    ENABLE ROW LEVEL SECURITY;
+
+CREATE
+    POLICY tenant_work_template_policy ON tenant_work
+    USING (tenant_id = rls_get_tenant_id()::UUID);
+
+GRANT ALL
+    ON tenant_work TO acme_role_tenant;
