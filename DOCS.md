@@ -23,3 +23,14 @@ marked as belonging to the tenant.
 A hierarchy of tenants is also supported, with two main use cases in mind: 1) unified
 billing and 2) wholesale/reseller model, where a tenant is able to create and own
 other tenant accounts.
+
+## Bloat
+
+Useful to clear bloat from a table, without having to drop it (which may have various
+negative implications). Getting a lock may be difficult if the table is very busy.
+
+  LOCK TABLE queue IN EXCLUSIVE MODE;
+  CREATE TABLE queue_tmp AS TABLE queue;
+  TRUNCATE TABLE queue;
+  INSERT INTO queue SELECT * FROM queue_tmp;
+  DROP TABLE queue_tmp;
