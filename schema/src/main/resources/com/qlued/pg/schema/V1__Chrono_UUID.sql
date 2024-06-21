@@ -7,6 +7,9 @@
 --
 -- Reference: https://www.2ndquadrant.com/en/blog/sequential-uuid-generators/
 
+-- Another option is: https://github.com/pksunkara/pgx_ulid
+-- And https://www.rfc-editor.org/rfc/rfc9562.html will probably be supported soon.
+
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE OR REPLACE FUNCTION gen_chrono_uuid(OUT result UUID) AS $$
