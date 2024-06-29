@@ -41,8 +41,8 @@ CREATE TABLE audit_log
         ),
 
     CONSTRAINT consistent_actor_type CHECK (
-            ((actor_type = 'U') AND (actor_user_id IS NOT NULL)) OR
-            ((actor_user_id IS NULL) AND (actor_tenant_id IS NULL))
+        ((actor_type = 'U') AND (actor_user_id IS NOT NULL)) OR
+        ((actor_user_id IS NULL) AND (actor_tenant_id IS NULL))
         ),
 
 
@@ -134,6 +134,7 @@ ALTER TABLE audit_log
     ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY audit_log_policy ON audit_log
-    USING (owner_tenant_id = rls_get_tenant_id()::UUID);
+    USING ((SELECT rls_get_tenant_id()::UUID) = tenant_id)
+    WITH CHECK ((SELECT rls_get_tenant_id()::UUID) = tenant_id);
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON tenant_users TO acme_role_tenant;

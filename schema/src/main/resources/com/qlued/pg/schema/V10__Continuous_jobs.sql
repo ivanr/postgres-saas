@@ -50,9 +50,8 @@ CREATE INDEX tenant_work_schedule_last_modified ON tenant_work (schedule_last_mo
 ALTER TABLE tenant_work
     ENABLE ROW LEVEL SECURITY;
 
-CREATE
-    POLICY tenant_work_template_policy ON tenant_work
-    USING (tenant_id = rls_get_tenant_id()::UUID);
+CREATE POLICY tenant_work_template_policy ON tenant_work
+    USING ((SELECT rls_get_tenant_id()::UUID) = tenant_id);
 
 GRANT ALL
     ON tenant_work TO acme_role_tenant;

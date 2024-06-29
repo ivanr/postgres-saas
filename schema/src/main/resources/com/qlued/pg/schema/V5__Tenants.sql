@@ -13,7 +13,7 @@ ALTER TABLE tenants
     ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY tenants_policy ON tenants
-    USING (tenant_id = rls_get_tenant_id()::UUID);
+    USING ((SELECT rls_get_tenant_id()::UUID) = tenant_id);
 
 GRANT ALL ON tenants TO acme_role_tenant;
 
@@ -35,7 +35,7 @@ ALTER TABLE tenant_users
     ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY tenant_users_policy ON tenant_users
-    USING (tenant_id = rls_get_tenant_id()::UUID);
+    USING ((SELECT rls_get_tenant_id()::UUID) = tenant_id);
 
 GRANT ALL ON tenant_users TO acme_role_tenant;
 
@@ -57,6 +57,6 @@ ALTER TABLE tenant_notes
     ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY tenant_notes_policy ON tenant_notes
-    USING (tenant_id = rls_get_tenant_id()::UUID);
+    USING ((SELECT rls_get_tenant_id()::UUID) = tenant_id);
 
 GRANT ALL ON tenant_notes TO acme_role_tenant;

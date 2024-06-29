@@ -40,3 +40,6 @@ TODO
 
   - Write a generic set of functions that can be reused and/or built on
 
+  - https://supabase.com/docs/guides/database/postgres/row-level-security
+
+  - https://www.youtube.com/watch?v=vZT1Qx2xUCo

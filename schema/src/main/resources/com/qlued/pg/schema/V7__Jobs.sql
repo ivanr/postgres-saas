@@ -56,9 +56,8 @@ CREATE INDEX tenant_jobs_status_run_at ON tenant_jobs (status, run_at);
 ALTER TABLE tenant_jobs
     ENABLE ROW LEVEL SECURITY;
 
-CREATE
-    POLICY tenant_jobs_template_policy ON tenant_jobs
-    USING (tenant_id = rls_get_tenant_id()::UUID);
+CREATE POLICY tenant_jobs_template_policy ON tenant_jobs
+    USING ((SELECT rls_get_tenant_id()::UUID) = tenant_id);
 
 GRANT ALL
     ON tenant_jobs TO acme_role_tenant;
