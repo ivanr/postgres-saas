@@ -9,6 +9,9 @@
 
 -- Another option is: https://github.com/pksunkara/pgx_ulid
 -- And https://www.rfc-editor.org/rfc/rfc9562.html will probably be supported soon.
+--
+-- Also: Implementing UUIDs v7 in pure SQL
+-- https://postgresql.verite.pro/blog/2024/07/15/uuid-v7-pure-sql.html
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
