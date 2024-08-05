@@ -12,6 +12,9 @@
 --
 -- Also: Implementing UUIDs v7 in pure SQL
 -- https://postgresql.verite.pro/blog/2024/07/15/uuid-v7-pure-sql.html
+--
+-- pg_uuidv7
+-- https://github.com/fboulnois/pg_uuidv7
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
