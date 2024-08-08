@@ -43,3 +43,10 @@ TODO
   - https://supabase.com/docs/guides/database/postgres/row-level-security
 
   - https://www.youtube.com/watch?v=vZT1Qx2xUCo
+
+  - Use a separate user that can't access anything by default; the attacker
+    could otherwise invoke RESET ALL
+
+  - Use "RESET ALL" to clear session state
+
+  - Maybe call a procedure to reset state, set application name, configure row-level security
